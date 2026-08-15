@@ -1,0 +1,139 @@
+name: Apply site audit fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-audit-fixes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fixes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply audit fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('.')
+
+          # 1) Restore full branding anywhere the newer resource library regressed it.
+          for p in root.rglob('*.html'):
+              s = p.read_text(encoding='utf-8')
+              s = s.replace('<strong>Engineering Academy</strong>', "<strong>Sajjad's Engineering Academy</strong>")
+              s = s.replace('SEA Reliability Faculty', "Sajjad's Engineering Academy")
+              s = s.replace('SEA Automation Faculty', "Sajjad's Engineering Academy")
+              s = s.replace('SEA Electrical Faculty', "Sajjad's Engineering Academy")
+              s = s.replace('SEA Energy Faculty', "Sajjad's Engineering Academy")
+              s = s.replace('SEA Utilities Faculty', "Sajjad's Engineering Academy")
+              s = s.replace('SEA Leadership Faculty', "Sajjad's Engineering Academy")
+              p.write_text(s, encoding='utf-8')
+
+          # 2) Gate the resource hub and structured resource-library pages; keep guides public for SEO.
+          protected = [Path('resources.html'), *Path('resource-library').glob('*.html')]
+          for p in protected:
+              s = p.read_text(encoding='utf-8')
+              if '<meta name="robots"' not in s:
+                  s = s.replace('</title>', '</title><meta name="robots" content="noindex,follow">', 1)
+              else:
+                  s = re.sub(r'<meta name="robots"[^>]*>', '<meta name="robots" content="noindex,follow">', s, count=1)
+              if 'src="/auth.js" data-protect' not in s:
+                  s = s.replace('</head>', '<script src="/auth.js" data-protect></script></head>', 1)
+              p.write_text(s, encoding='utf-8')
+
+          for p in Path('guides').rglob('*.html'):
+              s = p.read_text(encoding='utf-8')
+              s = s.replace('<script src="/auth.js" data-protect></script>', '')
+              if 'src="/auth.js"' not in s:
+                  s = s.replace('</body>', '<script src="/auth.js"></script></body>', 1)
+              p.write_text(s, encoding='utf-8')
+
+          # 3) Update client auth so only resource areas/downloads require sign-in.
+          p = Path('auth.js')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace("return /(^|\\/)(resources\\.html|guides(?:\\/|$)|downloads(?:\\/|$))/.test(u.pathname);",
+                        "return /(^|\\/)(resources\\.html|resource-library(?:\\/|$)|downloads(?:\\/|$))/.test(u.pathname);")
+          old = "const nav=document.querySelector('.nav-inner');\n    if(nav){nav.appendChild(wrap)}\n    else{wrap.classList.add('sea-account-floating');document.body.appendChild(wrap)}"
+          new = "const nav=document.querySelector('.nav-inner');\n    const navLinks=document.querySelector('.nav-links');\n    const mobile=window.matchMedia('(max-width:760px)').matches;\n    if(mobile&&navLinks){navLinks.appendChild(wrap)}\n    else if(nav){nav.appendChild(wrap)}\n    else{wrap.classList.add('sea-account-floating');document.body.appendChild(wrap)}"
+          if old in s:
+              s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+
+          # 4) Make the homepage search functional and allow q= searches to populate the catalogue.
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('<div class="market-search"><input placeholder="What do you want to learn? HVAC, PLC, maintenance...">',
+                        '<div class="market-search"><input id="homeCourseSearch" aria-label="Search engineering courses" placeholder="What do you want to learn? HVAC, PLC, maintenance...">')
+          p.write_text(s, encoding='utf-8')
+
+          p = Path('marketplace.js')
+          s = p.read_text(encoding='utf-8')
+          addition = "const homeSearch=document.querySelector('#homeCourseSearch');if(homeSearch){homeSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=homeSearch.value.trim();location.href='courses.html'+(q?'?q='+encodeURIComponent(q):'')}})}const initialQuery=new URLSearchParams(location.search).get('q');if(search&&initialQuery){search.value=initialQuery;filterCourses();const mobileSearch=document.querySelector('#courseSearchMobile');if(mobileSearch)mobileSearch.value=initialQuery;}"
+          if "const homeSearch=document.querySelector('#homeCourseSearch')" not in s:
+              s += addition
+          p.write_text(s, encoding='utf-8')
+
+          # 5) Remove unverified ratings/learner counts and marketing badges from prototype course UI.
+          for name in ['index.html','courses.html','course.html','student-dashboard.html']:
+              p = Path(name)
+              s = p.read_text(encoding='utf-8')
+              s = re.sub(r'<div class="rating">.*?</div>', '<div class="rating"><span>Free learning preview</span></div>', s, flags=re.S)
+              s = re.sub(r'<span class="badge">(?:Bestseller|Popular|New|Free)</span>', '<span class="badge">Free course</span>', s)
+              p.write_text(s, encoding='utf-8')
+
+          # Make dashboard demo status unmistakable and remove fake progress metrics.
+          p = Path('student-dashboard.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('<title>Student Dashboard |', '<title>Student Dashboard Preview |')
+          s = s.replace('<strong>Student Account</strong><small>Free learning preview</small>', '<strong>Demo Learner</strong><small>Dashboard preview — no saved LMS data</small>')
+          s = s.replace('<h1>Welcome back</h1><p>Continue your free engineering learning journey.</p>', '<span class="empty-demo">DEMO DATA</span><h1>Student dashboard preview</h1><p>See how learner progress will look after the LMS backend is connected.</p>')
+          for val in ['4','1','26.5']:
+              s = s.replace(f'<strong>{val}</strong>', '<strong>—</strong>', 1)
+          s = s.replace('<strong>1</strong></div></div><section class="panel"', '<strong>—</strong></div></div><section class="panel"', 1)
+          s = s.replace('Continue 68%', 'Preview').replace('Continue 42%', 'Preview').replace('Continue 18%', 'Preview')
+          p.write_text(s, encoding='utf-8')
+
+          # 6) Add legal links to standard root-page footers.
+          for p in root.glob('*.html'):
+              if p.name in {'privacy.html','terms.html','disclaimer.html','register.html','signin.html'}:
+                  continue
+              s = p.read_text(encoding='utf-8')
+              marker = '</div><div class="copyright">'
+              if marker in s and 'href="privacy.html"' not in s:
+                  s = s.replace(marker, '<a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="disclaimer.html">Disclaimer</a></div><div class="copyright">', 1)
+              p.write_text(s, encoding='utf-8')
+
+          # Resource-library footers use parent-relative legal links.
+          for p in Path('resource-library').glob('*.html'):
+              s = p.read_text(encoding='utf-8')
+              marker = '</div><div class="copyright">'
+              if marker in s and 'href="../privacy.html"' not in s:
+                  s = s.replace(marker, '<a href="../privacy.html">Privacy</a><a href="../terms.html">Terms</a><a href="../disclaimer.html">Disclaimer</a></div><div class="copyright">', 1)
+              p.write_text(s, encoding='utf-8')
+
+          # 7) Protected resources should not be advertised to search engines through the XML sitemap.
+          p = Path('sitemap.xml')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r'\s*<url><loc>https://sajjadengineeringacademy\.com/resources\.html</loc>.*?</url>', '', s)
+          p.write_text(s, encoding='utf-8')
+
+          # Remove this one-time workflow after it performs the update.
+          Path('.github/workflows/apply-audit-fixes.yml').unlink(missing_ok=True)
+          PY
+
+      - name: Commit fixes
+        run: |
+          git config user.name "sajjadahmad87"
+          git config user.email "engr.sajjad87@gmail.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Apply website audit fixes"
+            git push
+          fi
