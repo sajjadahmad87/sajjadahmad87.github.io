@@ -1,0 +1,17 @@
+{
+  "name": "Sajjad's Engineering Academy",
+  "short_name": "SEA",
+  "description": "Free practical engineering learning in HVAC, maintenance, PLC automation, electrical systems, utilities, solar energy, reliability and engineering management.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07111b",
+  "theme_color": "#07111b",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
