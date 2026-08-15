@@ -101,7 +101,10 @@
     }
 
     const nav=document.querySelector('.nav-inner');
-    if(nav){nav.appendChild(wrap)}
+    const navLinks=document.querySelector('.nav-links');
+    const mobile=window.matchMedia('(max-width:760px)').matches;
+    if(mobile&&navLinks){navLinks.appendChild(wrap)}
+    else if(nav){nav.appendChild(wrap)}
     else{wrap.classList.add('sea-account-floating');document.body.appendChild(wrap)}
   };
 
