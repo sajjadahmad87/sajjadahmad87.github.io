@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign In | Sajjad's Engineering Academy</title>
+<meta name="description" content="Sign in to access registered learner resources from Sajjad's Engineering Academy.">
+<meta name="robots" content="noindex,follow">
+<link rel="stylesheet" href="pages.css">
+<style>
+.reg-wrap{min-height:calc(100vh - 150px);display:grid;place-items:center;padding:70px 20px;background:radial-gradient(circle at 10% 10%,rgba(0,201,255,.12),transparent 35%),#07131f}.reg-card{width:min(620px,100%);background:#0c1d2b;border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:34px;box-shadow:0 28px 80px rgba(0,0,0,.32)}.reg-card h1{margin:.25rem 0 .65rem;font-size:clamp(30px,5vw,48px);line-height:1.05}.reg-card .lead{color:#9fb5c5}.reg-field{margin-top:24px}.reg-field label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:7px}.reg-field input{width:100%;box-sizing:border-box;background:#081723;border:1px solid rgba(255,255,255,.14);color:#fff;padding:13px 14px;border-radius:10px}.reg-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.reg-note,.signin-error{margin-top:18px;padding:14px;border-radius:10px;background:rgba(0,201,255,.08);color:#bcd4e2;font-size:13px}.signin-error{background:rgba(255,120,120,.08);border:1px solid rgba(255,120,120,.2);color:#ffd1d1}.signup-prompt{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);color:#a9bfce;font-size:14px}.signup-prompt a{color:#63dcff;font-weight:700}@media(max-width:680px){.reg-card{padding:24px}}
+</style>
+</head>
+<body>
+<header class="nav"><div class="container nav-inner"><a class="brand" href="index.html"><div class="brand-mark">SEA</div><div class="brand-copy"><strong>Sajjad's Engineering Academy</strong><small>Practical Engineering • Real Workplace</small></div></a><nav class="nav-links"><a href="index.html">Home</a><a href="courses.html">Courses</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav></div></header>
+<main class="reg-wrap">
+<section class="reg-card">
+<span class="label">LEARNER ACCOUNT</span>
+<h1>Sign in to continue.</h1>
+<p class="lead">Use the email address you registered with on this browser to access protected engineering resources.</p>
+<form id="seaSigninForm">
+<div class="reg-field"><label for="signinEmail">Email address *</label><input id="signinEmail" name="email" type="email" required autocomplete="email" placeholder="name@example.com"></div>
+<div id="signinError" class="signin-error" hidden></div>
+<div class="reg-actions"><button class="btn btn-primary" type="submit">Sign In →</button><a class="btn btn-secondary" href="index.html">Back to home</a></div>
+</form>
+<div class="signup-prompt">New to the academy? <a href="register.html">Create a free account</a>.</div>
+<div class="reg-note"><strong>Account note:</strong> This current GitHub Pages version uses a browser-local learner account. Secure password authentication, email verification and cross-device accounts require the planned backend authentication system.</div>
+</section>
+</main>
+<script src="auth.js"></script>
+</body>
+</html>
