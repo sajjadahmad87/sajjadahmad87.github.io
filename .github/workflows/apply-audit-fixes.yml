@@ -14,14 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply audit fixes
-        run: python3 scripts/apply_site_audit_fixes.py
-      - name: Remove one-time repair files
-        run: rm -f scripts/apply_site_audit_fixes.py .github/workflows/apply-audit-fixes.yml
-      - name: Commit fixes
+        with:
+          fetch-depth: 0
+      - name: Apply fixes on latest main with retry
         run: |
           git config user.name "sajjadahmad87"
           git config user.email "engr.sajjad87@gmail.com"
-          git add -A
-          git commit -m "Apply website audit fixes"
-          git push
+          for attempt in 1 2 3 4 5; do
+            echo "Attempt $attempt"
+            git fetch origin main
+            git reset --hard origin/main
+            python3 scripts/apply_site_audit_fixes.py
+            rm -f scripts/apply_site_audit_fixes.py .github/workflows/apply-audit-fixes.yml
+            git add -A
+            if git diff --cached --quiet; then
+              echo "No changes required"
+              exit 0
+            fi
+            git commit -m "Apply website audit fixes"
+            if git push origin main; then
+              echo "Audit fixes pushed successfully"
+              exit 0
+            fi
+            echo "Main changed during push; retrying from newest revision"
+          done
+          echo "Unable to push after retries"
+          exit 1
