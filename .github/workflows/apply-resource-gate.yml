@@ -1,0 +1,73 @@
+name: Apply resource registration gate
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-resource-gate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Inject registration gate
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          protected = {Path('resources.html')}
+          protected.update(Path('guides').rglob('*.html'))
+
+          html_files = list(Path('.').glob('*.html')) + list(Path('guides').rglob('*.html'))
+          changed = []
+
+          for path in html_files:
+              if path.name == 'register.html' and path.parent == Path('.'):
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              if '/auth.js' in text or 'src="auth.js"' in text:
+                  continue
+
+              if path in protected:
+                  tag = '<script src="/auth.js" data-protect></script>'
+                  if '</head>' in text:
+                      text = text.replace('</head>', tag + '</head>', 1)
+                  else:
+                      continue
+              else:
+                  tag = '<script src="/auth.js"></script>'
+                  if '</body>' in text:
+                      text = text.replace('</body>', tag + '</body>', 1)
+                  else:
+                      continue
+
+              path.write_text(text, encoding='utf-8')
+              changed.append(str(path))
+
+          print(f'Updated {len(changed)} HTML files')
+          for item in changed:
+              print(item)
+          PY
+      - name: Remove one-time workflow and commit
+        shell: bash
+        run: |
+          rm -f .github/workflows/apply-resource-gate.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes required"
+            exit 0
+          fi
+          git commit -m "Require registration for engineering resources"
+          git push
