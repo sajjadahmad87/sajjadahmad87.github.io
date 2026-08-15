@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Register for Resources | Sajjad's Engineering Academy</title>
-<meta name="description" content="Create a free learner registration to access engineering resources from Sajjad's Engineering Academy.">
+<title>Sign Up for Resources | Sajjad's Engineering Academy</title>
+<meta name="description" content="Create a free learner account to access engineering resources from Sajjad's Engineering Academy.">
 <meta name="robots" content="noindex,follow">
 <link rel="stylesheet" href="pages.css">
 <style>
-.reg-wrap{min-height:calc(100vh - 150px);display:grid;place-items:center;padding:70px 20px;background:radial-gradient(circle at 10% 10%,rgba(0,201,255,.12),transparent 35%),#07131f}.reg-card{width:min(760px,100%);background:#0c1d2b;border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:34px;box-shadow:0 28px 80px rgba(0,0,0,.32)}.reg-card h1{margin:.25rem 0 .65rem;font-size:clamp(30px,5vw,48px);line-height:1.05}.reg-card .lead{color:#9fb5c5}.reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}.reg-grid .full{grid-column:1/-1}.reg-field label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:7px}.reg-field input,.reg-field select{width:100%;box-sizing:border-box;background:#081723;border:1px solid rgba(255,255,255,.14);color:#fff;padding:13px 14px;border-radius:10px}.reg-note{margin-top:18px;padding:14px;border-radius:10px;background:rgba(0,201,255,.08);color:#bcd4e2;font-size:13px}.reg-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.existing{margin-top:18px;padding:15px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#081723}.existing strong{display:block;margin-bottom:8px}@media(max-width:680px){.reg-card{padding:24px}.reg-grid{grid-template-columns:1fr}.reg-grid .full{grid-column:auto}}
+.reg-wrap{min-height:calc(100vh - 150px);display:grid;place-items:center;padding:70px 20px;background:radial-gradient(circle at 10% 10%,rgba(0,201,255,.12),transparent 35%),#07131f}.reg-card{width:min(760px,100%);background:#0c1d2b;border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:34px;box-shadow:0 28px 80px rgba(0,0,0,.32)}.reg-card h1{margin:.25rem 0 .65rem;font-size:clamp(30px,5vw,48px);line-height:1.05}.reg-card .lead{color:#9fb5c5}.reg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}.reg-grid .full{grid-column:1/-1}.reg-field label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:7px}.reg-field input,.reg-field select{width:100%;box-sizing:border-box;background:#081723;border:1px solid rgba(255,255,255,.14);color:#fff;padding:13px 14px;border-radius:10px}.reg-note{margin-top:18px;padding:14px;border-radius:10px;background:rgba(0,201,255,.08);color:#bcd4e2;font-size:13px}.reg-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}.existing{margin-top:18px;padding:15px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#081723}.existing strong{display:block;margin-bottom:8px}.signin-prompt{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);color:#a9bfce;font-size:14px}.signin-prompt a{color:#63dcff;font-weight:700}@media(max-width:680px){.reg-card{padding:24px}.reg-grid{grid-template-columns:1fr}.reg-grid .full{grid-column:auto}}
 </style>
 </head>
 <body>
 <header class="nav"><div class="container nav-inner"><a class="brand" href="index.html"><div class="brand-mark">SEA</div><div class="brand-copy"><strong>Sajjad's Engineering Academy</strong><small>Practical Engineering • Real Workplace</small></div></a><nav class="nav-links"><a href="index.html">Home</a><a href="courses.html">Courses</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav></div></header>
 <main class="reg-wrap">
 <section class="reg-card">
-<span class="label">FREE LEARNER REGISTRATION</span>
-<h1>Register to access engineering resources.</h1>
-<p class="lead">Resources remain free. Registration helps build the learner community and is required before accessing technical guides and downloadable training material.</p>
-<div class="existing" id="existingRegistration" hidden><strong>Registration found for <span data-existing-name></span>.</strong><button class="btn btn-primary" type="button" data-sea-continue>Continue to requested resource →</button></div>
+<span class="label">FREE LEARNER SIGN UP</span>
+<h1>Create your free learner account.</h1>
+<p class="lead">Resources remain free. A learner account is required before accessing technical guides and downloadable training material.</p>
+<div class="existing" id="existingRegistration" hidden><strong>Account found for <span data-existing-name></span>.</strong><button class="btn btn-primary" type="button" data-sea-continue>Sign in & continue →</button></div>
 <form id="seaRegistrationForm">
 <div class="reg-grid">
 <div class="reg-field"><label for="regName">Full name *</label><input id="regName" name="name" required autocomplete="name" placeholder="Your full name"></div>
@@ -27,9 +27,10 @@
 <div class="reg-field"><label for="regCountry">Country</label><input id="regCountry" name="country" autocomplete="country-name" placeholder="Country"></div>
 <div class="full"><label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#bcd4e2"><input type="checkbox" required style="margin-top:3px"> <span>I agree to use the resources for learning and professional development and understand that OEM manuals, site procedures, safety requirements and competent assessment take priority.</span></label></div>
 </div>
-<div class="reg-actions"><button class="btn btn-primary" type="submit">Create free registration →</button><a class="btn btn-secondary" href="index.html">Back to home</a></div>
+<div class="reg-actions"><button class="btn btn-primary" type="submit">Sign Up Free →</button><a class="btn btn-secondary" href="index.html">Back to home</a></div>
 </form>
-<div class="reg-note"><strong>Privacy note:</strong> This current GitHub Pages version stores the registration only in your browser. It does not yet send your details to a server. A production account system can later add verified email login and secure private-resource access.</div>
+<div class="signin-prompt">Already registered? <a href="signin.html">Sign in to your learner account</a>.</div>
+<div class="reg-note"><strong>Privacy note:</strong> This current GitHub Pages version stores the learner account only in your browser. It does not yet send your details to a server. Secure password login, email verification and cross-device access can be added with the production authentication backend.</div>
 </section>
 </main>
 <script src="auth.js"></script>
