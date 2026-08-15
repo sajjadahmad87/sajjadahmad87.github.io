@@ -3,9 +3,9 @@
   const ACCOUNT_KEY='sea_account_v2';
   const SESSION_KEY='sea_session_v2';
   const script=document.currentScript;
-  // Public courses, guides and resource-library pages must remain accessible to learners and search crawlers.
-  // Only direct download paths may use the lightweight browser-local account gate in this static preview.
-  const requiresAuth=script?.hasAttribute('data-protect')&&/(^|\/)downloads(?:\/|$)/.test(location.pathname);
+  // Public courses and engineering guides remain open for discovery and SEO.
+  // The resource hub, structured resource libraries and direct downloads require the lightweight learner sign-in gate in this static preview.
+  const requiresAuth=script?.hasAttribute('data-protect');
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
@@ -36,7 +36,7 @@
     try{
       const u=new URL(href,location.href);
       if(u.origin!==location.origin) return false;
-      return /(^|\/)downloads(?:\/|$)/.test(u.pathname);
+      return /(^|\/)(resources\.html|resource-library(?:\/|$)|downloads(?:\/|$))/.test(u.pathname);
     }catch{return false}
   };
 
