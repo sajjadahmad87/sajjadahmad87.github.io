@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTBF, MTTR & Availability Calculator | Sajjad's Engineering Academy</title>
+<meta name="description" content="Calculate MTBF, MTTR and inherent availability for repairable equipment. Includes formulas, worked example, interpretation guidance, assumptions and common maintenance KPI mistakes.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#07111b">
+<link rel="canonical" href="https://sajjadengineeringacademy.com/tools/mtbf-mttr-availability-calculator/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:title" content="MTBF, MTTR & Availability Calculator | Sajjad's Engineering Academy">
+<meta property="og:description" content="A free reliability calculator for MTBF, MTTR and inherent availability with formulas and practical maintenance interpretation.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sajjadengineeringacademy.com/tools/mtbf-mttr-availability-calculator/">
+<meta property="og:site_name" content="Sajjad's Engineering Academy">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../../guide.css">
+<style>
+.calc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}.calc-card{padding:18px;border:1px solid rgba(145,225,255,.14);border-radius:14px;background:#0b1a27}.calc-card label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;color:#cceaf2}.calc-card input{width:100%;box-sizing:border-box;padding:12px;border-radius:9px;border:1px solid rgba(145,225,255,.2);background:#07131e;color:#fff;font:inherit}.calc-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px}.calc-actions button{padding:11px 16px;border:0;border-radius:9px;font-weight:800;cursor:pointer}.calc-actions button:first-child{background:#63ecff;color:#041019}.calc-actions button:last-child{background:#142838;color:#d8edf4;border:1px solid rgba(145,225,255,.15)}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.result{padding:17px;border-radius:12px;background:rgba(96,240,178,.06);border:1px solid rgba(96,240,178,.16)}.result small{display:block;color:#8fa7b7;font-size:11px;margin-bottom:6px}.result strong{font-size:24px;color:#60f0b2}.formula-box{padding:16px;border-left:3px solid #63ecff;background:rgba(99,236,255,.05);margin:16px 0;line-height:1.8}.error{display:none;margin:12px 0;padding:12px;border-radius:9px;background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);color:#ffb1b1}@media(max-width:760px){.calc-grid,.results{grid-template-columns:1fr}}
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"MTBF, MTTR & Availability Calculator","url":"https://sajjadengineeringacademy.com/tools/mtbf-mttr-availability-calculator/","applicationCategory":"EducationalApplication","operatingSystem":"Any","isAccessibleForFree":true,"description":"A free reliability calculator for MTBF, MTTR and inherent availability of repairable equipment.","publisher":{"@type":"Organization","name":"Sajjad's Engineering Academy","url":"https://sajjadengineeringacademy.com/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://sajjadengineeringacademy.com/"},{"@type":"ListItem","position":2,"name":"Engineering Tools","item":"https://sajjadengineeringacademy.com/tools/"},{"@type":"ListItem","position":3,"name":"MTBF, MTTR & Availability Calculator","item":"https://sajjadengineeringacademy.com/tools/mtbf-mttr-availability-calculator/"}]}</script>
+</head>
+<body class="guide-body">
+<main class="guide-shell">
+<div class="guide-breadcrumb"><a href="../../">Sajjad's Engineering Academy</a> / <a href="../">Engineering Tools</a> / Reliability Calculator</div>
+<header class="guide-hero"><span class="guide-kicker">Reliability Engineering Tool</span><h1>MTBF, MTTR & Availability Calculator</h1><p>Calculate three core reliability indicators for repairable equipment using operating time, number of failures and total repair time. The calculator shows the formulas and assumptions so the result can be checked against your maintenance records.</p></header>
+<section class="guide-content">
+<h2>Enter maintenance data</h2>
+<div class="calc-grid">
+<div class="calc-card"><label for="operatingTime">Total operating time (hours)</label><input id="operatingTime" type="number" min="0" step="any" inputmode="decimal" placeholder="Example: 1000"></div>
+<div class="calc-card"><label for="failures">Number of qualifying failures</label><input id="failures" type="number" min="0" step="1" inputmode="numeric" placeholder="Example: 4"></div>
+<div class="calc-card"><label for="repairTime">Total active repair time (hours)</label><input id="repairTime" type="number" min="0" step="any" inputmode="decimal" placeholder="Example: 20"></div>
+<div class="calc-card"><label for="precision">Display decimal places</label><input id="precision" type="number" min="0" max="4" step="1" value="2"></div>
+</div>
+<div id="error" class="error" role="alert"></div>
+<div class="calc-actions"><button type="button" id="calculate">Calculate reliability KPIs</button><button type="button" id="reset">Reset</button></div>
+<div class="results" aria-live="polite">
+<div class="result"><small>Mean Time Between Failures</small><strong id="mtbfResult">—</strong></div>
+<div class="result"><small>Mean Time To Repair</small><strong id="mttrResult">—</strong></div>
+<div class="result"><small>Inherent Availability</small><strong id="availabilityResult">—</strong></div>
+</div>
+<h2>Formulas used</h2>
+<div class="formula-box"><strong>MTBF = Total operating time ÷ Number of failures</strong><br><strong>MTTR = Total active repair time ÷ Number of failures</strong><br><strong>Inherent availability = MTBF ÷ (MTBF + MTTR) × 100%</strong></div>
+<p>This availability relationship is a simplified inherent-availability calculation based on MTBF and active corrective repair time. It does not include all delay categories such as logistics, waiting for spares, planned maintenance, administrative delay or other downtime unless those are deliberately included in your chosen repair-time definition.</p>
+<h2>Worked example</h2>
+<p>A repairable machine records <strong>1,000 operating hours</strong>, <strong>4 qualifying failures</strong> and <strong>20 total active repair hours</strong>.</p>
+<ul><li>MTBF = 1,000 ÷ 4 = <strong>250 hours</strong>.</li><li>MTTR = 20 ÷ 4 = <strong>5 hours</strong>.</li><li>Availability = 250 ÷ (250 + 5) × 100 = <strong>98.04%</strong>.</li></ul>
+<h2>How to interpret the result</h2>
+<p><strong>Higher MTBF</strong> generally indicates failures are occurring less frequently under the selected definition and period. <strong>Lower MTTR</strong> generally indicates the maintenance organization restores the asset more quickly after qualifying failures. Availability improves when failure intervals increase, repair time falls, or both.</p>
+<p>Trend these values over comparable periods rather than treating one calculation as proof of improvement. A reliability change should be checked against equipment duty, production loading, failure definitions, maintenance strategy, spare availability and any major modifications completed during the period.</p>
+<h2>Common calculation mistakes</h2>
+<ul><li><strong>Changing the failure definition:</strong> do not count minor stops one month and only production-stopping breakdowns the next.</li><li><strong>Using calendar hours for an idle asset:</strong> use actual or consistently defined operating time where practical.</li><li><strong>Mixing planned maintenance with corrective repair time:</strong> decide what MTTR means in your KPI system and keep the definition consistent.</li><li><strong>Comparing unlike assets:</strong> duty cycle, criticality, environment and technology can make direct comparison misleading.</li><li><strong>Treating MTBF as component life:</strong> MTBF is an average reliability indicator, not a guaranteed failure interval.</li></ul>
+<div class="guide-note"><strong>Maintenance data rule:</strong> define operating time, qualifying failure, repair start and repair completion consistently before using the KPI for management decisions. CMMS timestamps should be reviewed for data quality rather than accepted automatically.</div>
+<h2>Related reliability learning</h2>
+<div class="guide-grid">
+<a class="guide-card" href="../../guides/mtbf/"><strong>MTBF Explained</strong><small>Learn how operating time and failure count should be defined and interpreted.</small></a>
+<a class="guide-card" href="../../guides/mttr/"><strong>MTTR Explained</strong><small>Understand repair-time measurement and common interpretation errors.</small></a>
+<a class="guide-card" href="../../guides/root-cause-analysis-5-why/"><strong>5-Why Root Cause Analysis</strong><small>Investigate repeat failures that are driving poor reliability.</small></a>
+<a class="guide-card" href="../../guides/preventive-maintenance/"><strong>Preventive Maintenance</strong><small>Use reliability trends to improve maintenance strategy.</small></a>
+</div>
+<h2>Safety and decision-use limitation</h2>
+<p>This calculator is an educational and preliminary analysis aid. It does not determine whether equipment is safe to operate or whether maintenance can be deferred. Approved site procedures, OEM manuals, engineering design data, risk assessments, PTW/LOTO requirements and competent-person review take priority for real equipment decisions.</p>
+<a class="guide-home" href="../">← Back to Engineering Calculators & Tools</a>
+</section>
+</main>
+<footer class="guide-footer">Sajjad's Engineering Academy — free practical engineering learning for the real workplace.</footer>
+<script>
+(function(){
+const operating=document.getElementById('operatingTime');
+const failures=document.getElementById('failures');
+const repair=document.getElementById('repairTime');
+const precision=document.getElementById('precision');
+const error=document.getElementById('error');
+const mtbfOut=document.getElementById('mtbfResult');
+const mttrOut=document.getElementById('mttrResult');
+const availOut=document.getElementById('availabilityResult');
+function showError(message){error.textContent=message;error.style.display='block';mtbfOut.textContent='—';mttrOut.textContent='—';availOut.textContent='—';}
+function calculate(){
+error.style.display='none';
+const op=Number(operating.value), f=Number(failures.value), rt=Number(repair.value); let p=Number(precision.value);
+if(!Number.isFinite(op)||!Number.isFinite(f)||!Number.isFinite(rt)||op<=0||f<=0||rt<0){showError('Enter operating time greater than 0, a failure count greater than 0, and repair time of 0 or more.');return;}
+if(!Number.isInteger(f)){showError('Number of failures must be a whole number.');return;}
+if(!Number.isInteger(p)||p<0||p>4)p=2;
+const mtbf=op/f, mttr=rt/f, availability=mtbf/(mtbf+mttr)*100;
+mtbfOut.textContent=mtbf.toFixed(p)+' h';
+mttrOut.textContent=mttr.toFixed(p)+' h';
+availOut.textContent=availability.toFixed(p)+'%';
+}
+document.getElementById('calculate').addEventListener('click',calculate);
+document.getElementById('reset').addEventListener('click',function(){operating.value='';failures.value='';repair.value='';precision.value='2';error.style.display='none';mtbfOut.textContent='—';mttrOut.textContent='—';availOut.textContent='—';operating.focus();});
+})();
+</script>
+</body>
+</html>
