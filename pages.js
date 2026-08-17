@@ -1,7 +1,19 @@
 const focusStyle=document.createElement('style');focusStyle.textContent=':where(a,button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #63ecff;outline-offset:3px;border-radius:6px}:where(input,select,textarea):focus-visible{box-shadow:0 0 0 3px rgba(99,236,255,.18)}';document.head.appendChild(focusStyle);
 
+const main=document.querySelector('main');
+if(main&&!main.id)main.id='main-content';
+if(main&&!document.querySelector('.skip-link')){
+  const skipLink=document.createElement('a');
+  skipLink.className='skip-link';
+  skipLink.href='#main-content';
+  skipLink.textContent='Skip to main content';
+  document.body.insertAdjacentElement('afterbegin',skipLink);
+}
+
 const menu=document.querySelector('.menu');
 const links=document.querySelector('.nav-links');
+
+if(links&&!links.hasAttribute('aria-label'))links.setAttribute('aria-label','Primary navigation');
 
 if(links&&!links.querySelector('a[href="/tools/"]')){
   const toolsLink=document.createElement('a');
