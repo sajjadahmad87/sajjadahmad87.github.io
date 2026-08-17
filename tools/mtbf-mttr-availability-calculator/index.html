@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="../../styles.css">
 <link rel="stylesheet" href="../../guide.css">
 <style>
-.calc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}.calc-card{padding:18px;border:1px solid rgba(145,225,255,.14);border-radius:14px;background:#0b1a27}.calc-card label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;color:#cceaf2}.calc-card input{width:100%;box-sizing:border-box;padding:12px;border-radius:9px;border:1px solid rgba(145,225,255,.2);background:#07131e;color:#fff;font:inherit}.calc-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px}.calc-actions button{padding:11px 16px;border:0;border-radius:9px;font-weight:800;cursor:pointer}.calc-actions button:first-child{background:#63ecff;color:#041019}.calc-actions button:last-child{background:#142838;color:#d8edf4;border:1px solid rgba(145,225,255,.15)}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.result{padding:17px;border-radius:12px;background:rgba(96,240,178,.06);border:1px solid rgba(96,240,178,.16)}.result small{display:block;color:#8fa7b7;font-size:11px;margin-bottom:6px}.result strong{font-size:24px;color:#60f0b2}.formula-box{padding:16px;border-left:3px solid #63ecff;background:rgba(99,236,255,.05);margin:16px 0;line-height:1.8}.error{display:none;margin:12px 0;padding:12px;border-radius:9px;background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);color:#ffb1b1}@media(max-width:760px){.calc-grid,.results{grid-template-columns:1fr}}
+.calc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:18px 0}.calc-card{padding:18px;border:1px solid rgba(145,225,255,.14);border-radius:14px;background:#0b1a27}.calc-card label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;color:#cceaf2}.calc-card input{width:100%;box-sizing:border-box;padding:12px;border-radius:9px;border:1px solid rgba(145,225,255,.2);background:#07131e;color:#fff;font:inherit}.calc-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px}.calc-actions button{padding:11px 16px;border:0;border-radius:9px;font-weight:800;cursor:pointer}.calc-actions button:first-child{background:#63ecff;color:#041019}.calc-actions button:last-child{background:#142838;color:#d8edf4;border:1px solid rgba(145,225,255,.15)}.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.result{padding:17px;border-radius:12px;background:rgba(96,240,178,.06);border:1px solid rgba(96,240,178,.16)}.result small{display:block;color:#8fa7b7;font-size:11px;margin-bottom:6px}.result strong{font-size:24px;color:#60f0b2}.formula-box{padding:16px;border-left:3px solid #63ecff;background:rgba(99,236,255,.05);margin:16px 0;line-height:1.8}.error{display:none;margin:12px 0;padding:12px;border-radius:9px;background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);color:#ffb1b1}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:760px){.calc-grid,.results{grid-template-columns:1fr}}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"MTBF, MTTR & Availability Calculator","url":"https://sajjadengineeringacademy.com/tools/mtbf-mttr-availability-calculator/","applicationCategory":"EducationalApplication","operatingSystem":"Any","isAccessibleForFree":true,"description":"A free reliability calculator for MTBF, MTTR and inherent availability of repairable equipment.","publisher":{"@type":"Organization","name":"Sajjad's Engineering Academy","url":"https://sajjadengineeringacademy.com/"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://sajjadengineeringacademy.com/"},{"@type":"ListItem","position":2,"name":"Engineering Tools","item":"https://sajjadengineeringacademy.com/tools/"},{"@type":"ListItem","position":3,"name":"MTBF, MTTR & Availability Calculator","item":"https://sajjadengineeringacademy.com/tools/mtbf-mttr-availability-calculator/"}]}</script>
@@ -38,11 +38,12 @@
 </div>
 <div id="error" class="error" role="alert"></div>
 <div class="calc-actions"><button type="button" id="calculate">Calculate reliability KPIs</button><button type="button" id="reset">Reset</button></div>
-<div class="results" aria-live="polite">
+<div class="results">
 <div class="result"><small>Mean Time Between Failures</small><strong id="mtbfResult">—</strong></div>
 <div class="result"><small>Mean Time To Repair</small><strong id="mttrResult">—</strong></div>
 <div class="result"><small>Inherent Availability</small><strong id="availabilityResult">—</strong></div>
 </div>
+<div id="resultStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 <h2>Formulas used</h2>
 <div class="formula-box"><strong>MTBF = Total operating time ÷ Number of failures</strong><br><strong>MTTR = Total active repair time ÷ Number of failures</strong><br><strong>Inherent availability = MTBF ÷ (MTBF + MTTR) × 100%</strong></div>
 <p>This availability relationship is a simplified inherent-availability calculation based on MTBF and active corrective repair time. It does not include all delay categories such as logistics, waiting for spares, planned maintenance, administrative delay or other downtime unless those are deliberately included in your chosen repair-time definition.</p>
@@ -78,20 +79,24 @@ const error=document.getElementById('error');
 const mtbfOut=document.getElementById('mtbfResult');
 const mttrOut=document.getElementById('mttrResult');
 const availOut=document.getElementById('availabilityResult');
+const resultStatus=document.getElementById('resultStatus');
+function announce(message){resultStatus.textContent='';window.setTimeout(function(){resultStatus.textContent=message;},20);}
 function showError(message){error.textContent=message;error.style.display='block';mtbfOut.textContent='—';mttrOut.textContent='—';availOut.textContent='—';}
-function calculate(){
+function calculate(shouldAnnounce){
 error.style.display='none';
 const op=Number(operating.value), f=Number(failures.value), rt=Number(repair.value); let p=Number(precision.value);
 if(!Number.isFinite(op)||!Number.isFinite(f)||!Number.isFinite(rt)||op<=0||f<=0||rt<0){showError('Enter operating time greater than 0, a failure count greater than 0, and repair time of 0 or more.');return;}
 if(!Number.isInteger(f)){showError('Number of failures must be a whole number.');return;}
 if(!Number.isInteger(p)||p<0||p>4)p=2;
 const mtbf=op/f, mttr=rt/f, availability=mtbf/(mtbf+mttr)*100;
-mtbfOut.textContent=mtbf.toFixed(p)+' h';
-mttrOut.textContent=mttr.toFixed(p)+' h';
-availOut.textContent=availability.toFixed(p)+'%';
+const mtbfText=mtbf.toFixed(p)+' h', mttrText=mttr.toFixed(p)+' h', availabilityText=availability.toFixed(p)+'%';
+mtbfOut.textContent=mtbfText;
+mttrOut.textContent=mttrText;
+availOut.textContent=availabilityText;
+if(shouldAnnounce)announce('Reliability results calculated. MTBF '+mtbfText+', MTTR '+mttrText+', inherent availability '+availabilityText+'.');
 }
-document.getElementById('calculate').addEventListener('click',calculate);
-document.getElementById('reset').addEventListener('click',function(){operating.value='';failures.value='';repair.value='';precision.value='2';error.style.display='none';mtbfOut.textContent='—';mttrOut.textContent='—';availOut.textContent='—';operating.focus();});
+document.getElementById('calculate').addEventListener('click',function(){calculate(true);});
+document.getElementById('reset').addEventListener('click',function(){operating.value='';failures.value='';repair.value='';precision.value='2';error.style.display='none';mtbfOut.textContent='—';mttrOut.textContent='—';availOut.textContent='—';announce('Reliability calculator reset.');operating.focus();});
 })();
 </script>
 </body>
