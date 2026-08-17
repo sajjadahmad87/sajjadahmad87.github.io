@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /downloads/
-Disallow: /resource-library/
 
 Sitemap: https://sajjadengineeringacademy.com/sitemap.xml
