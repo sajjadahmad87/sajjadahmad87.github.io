@@ -1,0 +1,5 @@
+# Security vulnerability reports for Sajjad's Engineering Academy
+Contact: mailto:contact@sajjadengineeringacademy.com
+Canonical: https://sajjadengineeringacademy.com/.well-known/security.txt
+Preferred-Languages: en
+Expires: 2027-08-17T23:59:59Z
