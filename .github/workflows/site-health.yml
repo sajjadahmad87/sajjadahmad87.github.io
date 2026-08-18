@@ -1,0 +1,149 @@
+name: Validate site links and sitemap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - '.github/workflows/site-health.yml'
+  pull_request:
+    paths:
+      - '**/*.html'
+      - '**/*.css'
+      - '**/*.js'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - '.github/workflows/site-health.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate internal links and sitemap URLs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urlparse, unquote
+          import xml.etree.ElementTree as ET
+          import sys
+
+          ROOT = Path('.').resolve()
+          SITE_HOST = 'sajjadengineeringacademy.com'
+          errors = []
+
+          class LinkParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.links = []
+
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == 'a' and attrs.get('href'):
+                      self.links.append(('href', attrs['href']))
+                  elif tag in {'img', 'script', 'iframe', 'source'} and attrs.get('src'):
+                      self.links.append(('src', attrs['src']))
+                  elif tag == 'link' and attrs.get('href'):
+                      self.links.append(('href', attrs['href']))
+
+          def existing_target(path_text, source_file=None):
+              path_text = unquote(path_text)
+              if path_text in {'', '/'}:
+                  candidates = [ROOT / 'index.html']
+              else:
+                  if path_text.startswith('/'):
+                      base = ROOT / path_text.lstrip('/')
+                  else:
+                      base = (source_file.parent / path_text) if source_file else (ROOT / path_text)
+                  candidates = [base]
+                  if path_text.endswith('/'):
+                      candidates.append(base / 'index.html')
+                  elif not Path(path_text).suffix:
+                      candidates.extend([Path(str(base) + '.html'), base / 'index.html'])
+              return any(p.resolve().is_file() for p in candidates)
+
+          def local_path_from_url(raw):
+              parsed = urlparse(raw)
+              if parsed.scheme in {'mailto', 'tel', 'javascript', 'data'}:
+                  return None
+              if parsed.scheme in {'http', 'https'}:
+                  if parsed.netloc.lower() not in {SITE_HOST, f'www.{SITE_HOST}'}:
+                      return None
+                  return parsed.path or '/'
+              if parsed.netloc:
+                  return None
+              return parsed.path
+
+          html_files = sorted(ROOT.rglob('*.html'))
+          checked_links = 0
+
+          for html_file in html_files:
+              parser = LinkParser()
+              try:
+                  parser.feed(html_file.read_text(encoding='utf-8', errors='ignore'))
+              except Exception as exc:
+                  errors.append(f'{html_file.relative_to(ROOT)}: could not parse HTML: {exc}')
+                  continue
+
+              for kind, raw in parser.links:
+                  if not raw or raw.startswith('#'):
+                      continue
+                  path_text = local_path_from_url(raw)
+                  if path_text is None or path_text == '':
+                      continue
+                  checked_links += 1
+                  if not existing_target(path_text, html_file):
+                      errors.append(
+                          f'{html_file.relative_to(ROOT)}: broken internal {kind} {raw!r}'
+                      )
+
+          sitemap = ROOT / 'sitemap.xml'
+          sitemap_count = 0
+          if not sitemap.is_file():
+              errors.append('sitemap.xml is missing')
+          else:
+              try:
+                  tree = ET.parse(sitemap)
+                  ns = {'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+                  locs = tree.findall('.//sm:loc', ns)
+                  if not locs:
+                      locs = tree.findall('.//loc')
+                  for loc in locs:
+                      url = (loc.text or '').strip()
+                      if not url:
+                          errors.append('sitemap.xml contains an empty <loc>')
+                          continue
+                      parsed = urlparse(url)
+                      if parsed.scheme != 'https' or parsed.netloc.lower() != SITE_HOST:
+                          errors.append(f'sitemap.xml has non-canonical URL: {url}')
+                          continue
+                      sitemap_count += 1
+                      if not existing_target(parsed.path or '/'):
+                          errors.append(f'sitemap.xml points to missing page: {url}')
+              except Exception as exc:
+                  errors.append(f'sitemap.xml could not be parsed: {exc}')
+
+          if errors:
+              print('Site health validation failed:')
+              for error in errors:
+                  print(f'  - {error}')
+              sys.exit(1)
+
+          print(
+              f'Site health validation passed: '
+              f'{len(html_files)} HTML files, {checked_links} internal references, '
+              f'{sitemap_count} sitemap URLs checked.'
+          )
+          PY
