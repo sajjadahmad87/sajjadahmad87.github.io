@@ -32,34 +32,47 @@ jobs:
 
           declare -A urls=()
 
-          while IFS= read -r file; do
-            url=""
+          url_for_file() {
+            local file="$1"
             case "$file" in
-              index.html) url="$SITE_ORIGIN/" ;;
-              guides/index.html) url="$SITE_ORIGIN/guides/" ;;
-              guides/*/index.html)
-                slug="${file#guides/}"
-                slug="${slug%/index.html}"
-                url="$SITE_ORIGIN/guides/$slug/"
+              index.html)
+                printf '%s/\n' "$SITE_ORIGIN"
                 ;;
-              tools/index.html) url="$SITE_ORIGIN/tools/" ;;
-              tools/*/index.html)
-                slug="${file#tools/}"
-                slug="${slug%/index.html}"
-                url="$SITE_ORIGIN/tools/$slug/"
+              */index.html)
+                local path="${file%index.html}"
+                printf '%s/%s\n' "$SITE_ORIGIN" "$path"
                 ;;
-              courses.html|course.html|about.html|contact.html|faq.html|privacy.html|terms.html|disclaimer.html|become-instructor.html)
-                url="$SITE_ORIGIN/$file"
+              *.html)
+                printf '%s/%s\n' "$SITE_ORIGIN" "$file"
                 ;;
             esac
+          }
 
-            if [[ -n "$url" ]]; then
+          sitemap_contains() {
+            local sitemap_ref="$1"
+            local url="$2"
+            git show "$sitemap_ref:sitemap.xml" 2>/dev/null | grep -Fq "<loc>$url</loc>"
+          }
+
+          while IFS= read -r file; do
+            [[ -n "$file" ]] || continue
+            url="$(url_for_file "$file" || true)"
+            [[ -n "$url" ]] || continue
+
+            # For existing/new pages, the current sitemap is the source of truth for
+            # indexability. For deleted pages, the previous sitemap confirms that the
+            # removed URL used to be public/indexable and should be reported as changed.
+            if [[ -e "$file" ]]; then
+              if sitemap_contains HEAD "$url"; then
+                urls["$url"]=1
+              fi
+            elif git rev-parse HEAD^ >/dev/null 2>&1 && sitemap_contains HEAD^ "$url"; then
               urls["$url"]=1
             fi
           done <<< "$changed_files"
 
           if [[ ${#urls[@]} -eq 0 ]]; then
-            echo "No changed public indexable URLs to submit."
+            echo "No changed sitemap-listed public URLs to submit."
             exit 0
           fi
 
