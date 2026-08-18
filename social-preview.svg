@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Sajjad's Engineering Academy</title>
+  <desc id="desc">Free practical engineering learning in HVAC, maintenance, automation, electrical systems, reliability, utilities and engineering tools.</desc>
+  <rect width="1200" height="630" fill="#07111b"/>
+  <rect x="70" y="65" width="1060" height="500" rx="28" fill="#0c1d2b" stroke="#3e6c87" stroke-width="2"/>
+  <rect x="90" y="90" width="155" height="60" rx="16" fill="#63dcff"/>
+  <text x="167" y="130" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#04131d">SEA</text>
+  <text x="90" y="245" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700" fill="#ebf6fc">Sajjad's Engineering Academy</text>
+  <text x="90" y="315" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#63dcff">Free practical engineering learning</text>
+  <text x="90" y="375" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#bcd4e2">HVAC • Maintenance • PLC &amp; Automation • Electrical</text>
+  <text x="90" y="415" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#bcd4e2">Reliability • Utilities • Energy • Engineering Tools</text>
+  <rect x="90" y="470" width="500" height="58" rx="14" fill="#081723" stroke="#63dcff" stroke-width="2"/>
+  <text x="340" y="507" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#ebf6fc">Learn • Troubleshoot • Improve</text>
+</svg>
