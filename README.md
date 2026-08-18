@@ -1,5 +1,7 @@
 # Sajjad's Engineering Academy
 
+[![Sajjad's Engineering Academy — free practical engineering learning](https://sajjadengineeringacademy.com/social-preview.svg)](https://sajjadengineeringacademy.com/)
+
 Practical, free engineering learning for technicians, engineers, and engineering leaders.
 
 ## Live Academy
