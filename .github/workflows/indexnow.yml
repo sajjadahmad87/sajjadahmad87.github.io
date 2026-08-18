@@ -48,7 +48,7 @@ jobs:
                 slug="${slug%/index.html}"
                 url="$SITE_ORIGIN/tools/$slug/"
                 ;;
-              courses.html|course.html|resources.html|about.html|contact.html|faq.html|privacy.html|terms.html|become-instructor.html)
+              courses.html|course.html|about.html|contact.html|faq.html|privacy.html|terms.html|disclaimer.html|become-instructor.html)
                 url="$SITE_ORIGIN/$file"
                 ;;
             esac
