@@ -1,0 +1,88 @@
+name: Notify IndexNow of public page changes
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notify-indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Submit changed public URLs to IndexNow
+        shell: bash
+        env:
+          INDEXNOW_KEY: 69013aae15122e0c1a75cb637b24eee7
+          SITE_ORIGIN: https://sajjadengineeringacademy.com
+        run: |
+          set -euo pipefail
+
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            changed_files="$(git diff --name-only HEAD^ HEAD)"
+          else
+            changed_files="$(git ls-tree -r --name-only HEAD)"
+          fi
+
+          declare -A urls=()
+
+          while IFS= read -r file; do
+            url=""
+            case "$file" in
+              index.html) url="$SITE_ORIGIN/" ;;
+              guides/index.html) url="$SITE_ORIGIN/guides/" ;;
+              guides/*/index.html)
+                slug="${file#guides/}"
+                slug="${slug%/index.html}"
+                url="$SITE_ORIGIN/guides/$slug/"
+                ;;
+              tools/index.html) url="$SITE_ORIGIN/tools/" ;;
+              tools/*/index.html)
+                slug="${file#tools/}"
+                slug="${slug%/index.html}"
+                url="$SITE_ORIGIN/tools/$slug/"
+                ;;
+              courses.html|course.html|resources.html|about.html|contact.html|faq.html|privacy.html|terms.html|become-instructor.html)
+                url="$SITE_ORIGIN/$file"
+                ;;
+              sitemap.xml)
+                url="$SITE_ORIGIN/sitemap.xml"
+                ;;
+            esac
+
+            if [[ -n "$url" ]]; then
+              urls["$url"]=1
+            fi
+          done <<< "$changed_files"
+
+          if [[ ${#urls[@]} -eq 0 ]]; then
+            echo "No changed public indexable URLs to submit."
+            exit 0
+          fi
+
+          failures=0
+          for url in "${!urls[@]}"; do
+            status="$(curl -sS -o /tmp/indexnow-response.txt -w '%{http_code}' --get \
+              --data-urlencode "url=$url" \
+              --data-urlencode "key=$INDEXNOW_KEY" \
+              https://api.indexnow.org/indexnow || true)"
+
+            if [[ "$status" == "200" || "$status" == "202" ]]; then
+              echo "IndexNow accepted: $url (HTTP $status)"
+            else
+              echo "IndexNow submission failed: $url (HTTP $status)"
+              cat /tmp/indexnow-response.txt || true
+              failures=$((failures + 1))
+            fi
+          done
+
+          if [[ $failures -gt 0 ]]; then
+            echo "$failures IndexNow submission(s) were not accepted."
+            exit 1
+          fi
