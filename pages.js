@@ -1,5 +1,3 @@
-const focusStyle=document.createElement('style');focusStyle.textContent=':where(a,button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #63ecff;outline-offset:3px;border-radius:6px}:where(input,select,textarea):focus-visible{box-shadow:0 0 0 3px rgba(99,236,255,.18)}';document.head.appendChild(focusStyle);
-
 const main=document.querySelector('main');
 if(main&&!main.id)main.id='main-content';
 if(main&&!document.querySelector('.skip-link')){
