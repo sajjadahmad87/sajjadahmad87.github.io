@@ -30,7 +30,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Validate internal links and sitemap URLs
+      - name: Validate internal links, anchors and sitemap URLs
         shell: bash
         run: |
           python3 - <<'PY'
@@ -48,9 +48,14 @@ jobs:
               def __init__(self):
                   super().__init__()
                   self.links = []
+                  self.ids = []
 
               def handle_starttag(self, tag, attrs):
                   attrs = dict(attrs)
+                  if attrs.get('id'):
+                      self.ids.append(attrs['id'])
+                  if tag == 'a' and attrs.get('name'):
+                      self.ids.append(attrs['name'])
                   if tag == 'a' and attrs.get('href'):
                       self.links.append(('href', attrs['href']))
                   elif tag in {'img', 'script', 'iframe', 'source'} and attrs.get('src'):
@@ -58,36 +63,48 @@ jobs:
                   elif tag == 'link' and attrs.get('href'):
                       self.links.append(('href', attrs['href']))
 
-          def existing_target(path_text, source_file=None):
+          def candidate_targets(path_text, source_file=None):
               path_text = unquote(path_text)
               if path_text in {'', '/'}:
-                  candidates = [ROOT / 'index.html']
+                  return [ROOT / 'index.html']
+              if path_text.startswith('/'):
+                  base = ROOT / path_text.lstrip('/')
               else:
-                  if path_text.startswith('/'):
-                      base = ROOT / path_text.lstrip('/')
-                  else:
-                      base = (source_file.parent / path_text) if source_file else (ROOT / path_text)
-                  candidates = [base]
-                  if path_text.endswith('/'):
-                      candidates.append(base / 'index.html')
-                  elif not Path(path_text).suffix:
-                      candidates.extend([Path(str(base) + '.html'), base / 'index.html'])
-              return any(p.resolve().is_file() for p in candidates)
+                  base = (source_file.parent / path_text) if source_file else (ROOT / path_text)
+              candidates = [base]
+              if path_text.endswith('/'):
+                  candidates.append(base / 'index.html')
+              elif not Path(path_text).suffix:
+                  candidates.extend([Path(str(base) + '.html'), base / 'index.html'])
+              return candidates
 
-          def local_path_from_url(raw):
+          def resolve_existing_target(path_text, source_file=None):
+              for candidate in candidate_targets(path_text, source_file):
+                  resolved = candidate.resolve()
+                  try:
+                      resolved.relative_to(ROOT)
+                  except ValueError:
+                      continue
+                  if resolved.is_file():
+                      return resolved
+              return None
+
+          def local_parts_from_url(raw):
               parsed = urlparse(raw)
               if parsed.scheme in {'mailto', 'tel', 'javascript', 'data'}:
                   return None
               if parsed.scheme in {'http', 'https'}:
                   if parsed.netloc.lower() not in {SITE_HOST, f'www.{SITE_HOST}'}:
                       return None
-                  return parsed.path or '/'
+                  return (parsed.path or '/', parsed.fragment)
               if parsed.netloc:
                   return None
-              return parsed.path
+              return (parsed.path, parsed.fragment)
 
           html_files = sorted(ROOT.rglob('*.html'))
+          parsed_pages = {}
           checked_links = 0
+          checked_anchors = 0
 
           for html_file in html_files:
               parser = LinkParser()
@@ -97,17 +114,55 @@ jobs:
                   errors.append(f'{html_file.relative_to(ROOT)}: could not parse HTML: {exc}')
                   continue
 
-              for kind, raw in parser.links:
-                  if not raw or raw.startswith('#'):
+              duplicates = sorted({item for item in parser.ids if parser.ids.count(item) > 1})
+              for duplicate in duplicates:
+                  errors.append(f'{html_file.relative_to(ROOT)}: duplicate anchor/id {duplicate!r}')
+
+              parsed_pages[html_file.resolve()] = {
+                  'links': parser.links,
+                  'ids': set(parser.ids),
+              }
+
+          for html_file, page in parsed_pages.items():
+              for kind, raw in page['links']:
+                  if not raw:
                       continue
-                  path_text = local_path_from_url(raw)
-                  if path_text is None or path_text == '':
+                  parts = local_parts_from_url(raw)
+                  if parts is None:
                       continue
-                  checked_links += 1
-                  if not existing_target(path_text, html_file):
-                      errors.append(
-                          f'{html_file.relative_to(ROOT)}: broken internal {kind} {raw!r}'
-                      )
+                  path_text, fragment = parts
+
+                  if path_text == '':
+                      target_file = html_file
+                  else:
+                      target_file = resolve_existing_target(path_text, html_file)
+                      checked_links += 1
+                      if target_file is None:
+                          errors.append(
+                              f'{html_file.relative_to(ROOT)}: broken internal {kind} {raw!r}'
+                          )
+                          continue
+
+                  if fragment and target_file.suffix.lower() == '.html':
+                      checked_anchors += 1
+                      target_page = parsed_pages.get(target_file.resolve())
+                      if target_page is None:
+                          parser = LinkParser()
+                          try:
+                              parser.feed(target_file.read_text(encoding='utf-8', errors='ignore'))
+                              target_ids = set(parser.ids)
+                          except Exception as exc:
+                              errors.append(
+                                  f'{target_file.relative_to(ROOT)}: could not parse target for anchor {fragment!r}: {exc}'
+                              )
+                              continue
+                      else:
+                          target_ids = target_page['ids']
+                      if unquote(fragment) not in target_ids:
+                          errors.append(
+                              f'{html_file.relative_to(ROOT)}: broken anchor {raw!r} '
+                              f'(missing #{unquote(fragment)} in {target_file.relative_to(ROOT)})'
+                          )
 
           sitemap = ROOT / 'sitemap.xml'
           sitemap_count = 0
@@ -130,7 +185,7 @@ jobs:
                           errors.append(f'sitemap.xml has non-canonical URL: {url}')
                           continue
                       sitemap_count += 1
-                      if not existing_target(parsed.path or '/'):
+                      if resolve_existing_target(parsed.path or '/') is None:
                           errors.append(f'sitemap.xml points to missing page: {url}')
               except Exception as exc:
                   errors.append(f'sitemap.xml could not be parsed: {exc}')
@@ -144,6 +199,6 @@ jobs:
           print(
               f'Site health validation passed: '
               f'{len(html_files)} HTML files, {checked_links} internal references, '
-              f'{sitemap_count} sitemap URLs checked.'
+              f'{checked_anchors} anchor references, {sitemap_count} sitemap URLs checked.'
           )
           PY
