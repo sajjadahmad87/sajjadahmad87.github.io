@@ -41,5 +41,9 @@
     });
     form.addEventListener('reset',()=>setTimeout(()=>{form.querySelectorAll('.lms-quiz-feedback').forEach(x=>{x.hidden=true;x.textContent=''});const r=form.querySelector('[data-lms-quiz-result]');r.hidden=true;r.textContent=''},0));
   };
-  document.addEventListener('DOMContentLoaded',()=>{mount();renderSummary()});
+  const loadCompletion=()=>{
+    if(document.querySelector('script[data-lms-completion-loader]'))return;
+    const s=document.createElement('script');s.src='/lms-completion.js';s.defer=true;s.setAttribute('data-lms-completion-loader','');document.head.appendChild(s);
+  };
+  document.addEventListener('DOMContentLoaded',()=>{mount();renderSummary();loadCompletion()});
 })();
