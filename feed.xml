@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Sajjad's Engineering Academy — Engineering Guides</title>
+    <link>https://sajjadengineeringacademy.com/guides/</link>
+    <description>Practical engineering guides for maintenance, reliability, HVAC, electrical systems, utilities and industrial troubleshooting.</description>
+    <language>en</language>
+    <lastBuildDate>Wed, 19 Aug 2026 07:57:51 +0000</lastBuildDate>
+    <atom:link href="https://sajjadengineeringacademy.com/feed.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+      <title>FMEA for Maintenance Engineers</title>
+      <link>https://sajjadengineeringacademy.com/guides/fmea-maintenance/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/fmea-maintenance/</guid>
+      <pubDate>Wed, 19 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Identify failure modes, effects, causes, controls and prioritized maintenance actions before failures recur.</description>
+    </item>
+    <item>
+      <title>Preventive Maintenance</title>
+      <link>https://sajjadengineeringacademy.com/guides/preventive-maintenance/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/preventive-maintenance/</guid>
+      <pubDate>Tue, 18 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Build a risk-based preventive maintenance program that targets real equipment failure modes.</description>
+    </item>
+    <item>
+      <title>5-Why Root Cause Analysis</title>
+      <link>https://sajjadengineeringacademy.com/guides/root-cause-analysis-5-why/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/root-cause-analysis-5-why/</guid>
+      <pubDate>Tue, 18 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Move from failure symptoms to evidence-based root causes and corrective actions using a structured 5-Why approach.</description>
+    </item>
+    <item>
+      <title>Professional PPM Checklist</title>
+      <link>https://sajjadengineeringacademy.com/guides/ppm-checklist/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/ppm-checklist/</guid>
+      <pubDate>Mon, 17 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Turn OEM guidance, equipment history and measurable inspection criteria into practical technician PPM tasks.</description>
+    </item>
+    <item>
+      <title>Bearing Failure Causes</title>
+      <link>https://sajjadengineeringacademy.com/guides/bearing-failure/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/bearing-failure/</guid>
+      <pubDate>Mon, 17 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Diagnose lubrication, contamination, alignment, installation and electrical bearing damage.</description>
+    </item>
+    <item>
+      <title>Steam Trap Fundamentals</title>
+      <link>https://sajjadengineeringacademy.com/guides/steam-trap/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/steam-trap/</guid>
+      <pubDate>Mon, 17 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Understand steam-trap types, failed-open and failed-closed symptoms, inspection approaches and energy implications.</description>
+    </item>
+    <item>
+      <title>Compressor Oil Carryover</title>
+      <link>https://sajjadengineeringacademy.com/guides/compressor-oil-carryover/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/compressor-oil-carryover/</guid>
+      <pubDate>Mon, 17 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Diagnose compressor, separator, dryer, filter and drain causes of oil carryover in compressed-air systems.</description>
+    </item>
+    <item>
+      <title>MTBF Explained</title>
+      <link>https://sajjadengineeringacademy.com/guides/mtbf/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/mtbf/</guid>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Understand the MTBF formula, examples, limitations and practical use in reliability engineering.</description>
+    </item>
+    <item>
+      <title>MTTR Explained</title>
+      <link>https://sajjadengineeringacademy.com/guides/mttr/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/mttr/</guid>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Measure and reduce average equipment repair duration while keeping repair-time definitions consistent.</description>
+    </item>
+    <item>
+      <title>VFD Fundamentals</title>
+      <link>https://sajjadengineeringacademy.com/guides/vfd-fundamentals/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/vfd-fundamentals/</guid>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Learn variable-frequency-drive operation, speed control, common trips and structured maintenance troubleshooting.</description>
+    </item>
+    <item>
+      <title>AHU Troubleshooting</title>
+      <link>https://sajjadengineeringacademy.com/guides/ahu-troubleshooting/</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/guides/ahu-troubleshooting/</guid>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 +0000</pubDate>
+      <description>Separate HVAC load, airflow, chilled-water, controls and fan/VFD problems using a structured AHU diagnostic approach.</description>
+    </item>
+  </channel>
+</rss>
