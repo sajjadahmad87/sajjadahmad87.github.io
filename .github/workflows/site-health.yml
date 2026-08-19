@@ -30,7 +30,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Validate internal links, anchors, canonicals and sitemap URLs
+      - name: Validate links, anchors, canonicals and sitemap coverage
         shell: bash
         run: |
           python3 - <<'PY'
@@ -125,6 +125,16 @@ jobs:
                   path = '/'
               return f'{SITE_ORIGIN}{path}'
 
+          def public_url_for_file(html_file):
+              rel = html_file.relative_to(ROOT).as_posix()
+              if rel == 'index.html':
+                  path = '/'
+              elif rel.endswith('/index.html'):
+                  path = '/' + rel[:-10]
+              else:
+                  path = '/' + rel
+              return normalize_public_url(f'{SITE_ORIGIN}{path}')
+
           html_files = sorted(ROOT.rglob('*.html'))
           parsed_pages = {}
           checked_links = 0
@@ -172,18 +182,7 @@ jobs:
                   if fragment and target_file.suffix.lower() == '.html':
                       checked_anchors += 1
                       target_page = parsed_pages.get(target_file.resolve())
-                      if target_page is None:
-                          parser = LinkParser()
-                          try:
-                              parser.feed(target_file.read_text(encoding='utf-8', errors='ignore'))
-                              target_ids = set(parser.ids)
-                          except Exception as exc:
-                              errors.append(
-                                  f'{target_file.relative_to(ROOT)}: could not parse target for anchor {fragment!r}: {exc}'
-                              )
-                              continue
-                      else:
-                          target_ids = target_page['ids']
+                      target_ids = target_page['ids'] if target_page else set()
                       if unquote(fragment) not in target_ids:
                           errors.append(
                               f'{html_file.relative_to(ROOT)}: broken anchor {raw!r} '
@@ -192,6 +191,7 @@ jobs:
 
           sitemap = ROOT / 'sitemap.xml'
           sitemap_count = 0
+          sitemap_urls = set()
           if not sitemap.is_file():
               errors.append('sitemap.xml is missing')
           else:
@@ -201,6 +201,7 @@ jobs:
                   locs = tree.findall('.//sm:loc', ns)
                   if not locs:
                       locs = tree.findall('.//loc')
+
                   for loc in locs:
                       url = (loc.text or '').strip()
                       if not url:
@@ -211,7 +212,13 @@ jobs:
                           errors.append(f'sitemap.xml has non-canonical URL: {url}')
                           continue
 
+                      normalized_url = normalize_public_url(url)
+                      if normalized_url in sitemap_urls:
+                          errors.append(f'sitemap.xml contains a duplicate URL: {url}')
+                          continue
+                      sitemap_urls.add(normalized_url)
                       sitemap_count += 1
+
                       target = resolve_existing_target(parsed.path or '/')
                       if target is None:
                           errors.append(f'sitemap.xml points to missing page: {url}')
@@ -237,12 +244,38 @@ jobs:
                               errors.append(
                                   f'{target.relative_to(ROOT)}: canonical is not on the HTTPS academy domain: {canonical}'
                               )
-                          elif normalize_public_url(canonical) != normalize_public_url(url):
+                          elif normalize_public_url(canonical) != normalized_url:
                               errors.append(
                                   f'{target.relative_to(ROOT)}: canonical {canonical!r} does not match sitemap URL {url!r}'
                               )
               except Exception as exc:
                   errors.append(f'sitemap.xml could not be parsed: {exc}')
+
+          # Catch discoverability regressions in the opposite direction too: a public,
+          # self-canonical, indexable HTML page should not silently disappear from the sitemap.
+          covered_indexable_pages = 0
+          for html_file, page in parsed_pages.items():
+              if 'noindex' in page['robots']:
+                  continue
+              if len(page['canonicals']) != 1:
+                  continue
+
+              canonical = page['canonicals'][0]
+              canonical_parsed = urlparse(canonical)
+              if canonical_parsed.scheme != 'https' or canonical_parsed.netloc.lower() != SITE_HOST:
+                  continue
+
+              canonical_url = normalize_public_url(canonical)
+              file_url = public_url_for_file(html_file)
+              if canonical_url != file_url:
+                  continue
+
+              covered_indexable_pages += 1
+              if canonical_url not in sitemap_urls:
+                  errors.append(
+                      f'{html_file.relative_to(ROOT)}: indexable self-canonical page is missing from sitemap.xml '
+                      f'({canonical_url})'
+                  )
 
           if errors:
               print('Site health validation failed:')
@@ -253,7 +286,7 @@ jobs:
           print(
               f'Site health validation passed: '
               f'{len(html_files)} HTML files, {checked_links} internal references, '
-              f'{checked_anchors} anchor references, {sitemap_count} sitemap URLs checked '
-              f'for existence, indexability and canonical consistency.'
+              f'{checked_anchors} anchor references, {sitemap_count} sitemap URLs checked, '
+              f'{covered_indexable_pages} indexable self-canonical pages covered by the sitemap.'
           )
           PY
