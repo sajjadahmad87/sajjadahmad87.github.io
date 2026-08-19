@@ -1,0 +1,177 @@
+name: Validate RSS feed
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'feed.xml'
+      - 'guides/**/*.html'
+      - '.github/workflows/rss-health.yml'
+  pull_request:
+    paths:
+      - 'feed.xml'
+      - 'guides/**/*.html'
+      - '.github/workflows/rss-health.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-rss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate RSS structure and guide targets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          import email.utils
+          import sys
+          import xml.etree.ElementTree as ET
+
+          ROOT = Path('.').resolve()
+          FEED = ROOT / 'feed.xml'
+          SITE_HOST = 'sajjadengineeringacademy.com'
+          FEED_URL = f'https://{SITE_HOST}/feed.xml'
+          GUIDES_URL = f'https://{SITE_HOST}/guides/'
+          ATOM = '{http://www.w3.org/2005/Atom}'
+          errors = []
+
+          def local_target(url):
+              parsed = urlparse(url)
+              if parsed.scheme != 'https' or parsed.netloc.lower() != SITE_HOST:
+                  return None
+              path = parsed.path or '/'
+              base = ROOT / path.lstrip('/')
+              candidates = [base]
+              if path.endswith('/'):
+                  candidates.append(base / 'index.html')
+              elif not Path(path).suffix:
+                  candidates.extend([Path(str(base) + '.html'), base / 'index.html'])
+              for candidate in candidates:
+                  try:
+                      resolved = candidate.resolve()
+                      resolved.relative_to(ROOT)
+                  except ValueError:
+                      continue
+                  if resolved.is_file():
+                      return resolved
+              return None
+
+          if not FEED.is_file():
+              errors.append('feed.xml is missing')
+          else:
+              try:
+                  root = ET.parse(FEED).getroot()
+              except Exception as exc:
+                  errors.append(f'feed.xml is not well-formed XML: {exc}')
+                  root = None
+
+              if root is not None:
+                  if root.tag != 'rss' or root.attrib.get('version') != '2.0':
+                      errors.append('feed.xml must use RSS 2.0')
+
+                  channel = root.find('channel')
+                  if channel is None:
+                      errors.append('feed.xml is missing <channel>')
+                  else:
+                      title = (channel.findtext('title') or '').strip()
+                      link = (channel.findtext('link') or '').strip()
+                      description = (channel.findtext('description') or '').strip()
+                      language = (channel.findtext('language') or '').strip()
+                      build_date = (channel.findtext('lastBuildDate') or '').strip()
+
+                      if not title:
+                          errors.append('RSS channel title is empty')
+                      if link != GUIDES_URL:
+                          errors.append(f'RSS channel link must be {GUIDES_URL}, found {link!r}')
+                      if not description:
+                          errors.append('RSS channel description is empty')
+                      if not language:
+                          errors.append('RSS channel language is empty')
+                      if build_date:
+                          try:
+                              email.utils.parsedate_to_datetime(build_date)
+                          except Exception:
+                              errors.append(f'Invalid RSS lastBuildDate: {build_date!r}')
+                      else:
+                          errors.append('RSS channel lastBuildDate is missing')
+
+                      atom_self = channel.find(f'{ATOM}link')
+                      if atom_self is None:
+                          errors.append('RSS feed is missing Atom self link')
+                      else:
+                          if atom_self.attrib.get('href') != FEED_URL:
+                              errors.append('RSS Atom self link does not point to /feed.xml')
+                          if atom_self.attrib.get('rel') != 'self':
+                              errors.append('RSS Atom link must use rel="self"')
+                          if atom_self.attrib.get('type') != 'application/rss+xml':
+                              errors.append('RSS Atom self link must use application/rss+xml')
+
+                      seen_links = set()
+                      seen_guids = set()
+                      items = channel.findall('item')
+                      if not items:
+                          errors.append('RSS feed contains no items')
+
+                      for index, item in enumerate(items, start=1):
+                          prefix = f'RSS item {index}'
+                          item_title = (item.findtext('title') or '').strip()
+                          item_link = (item.findtext('link') or '').strip()
+                          item_guid = (item.findtext('guid') or '').strip()
+                          item_date = (item.findtext('pubDate') or '').strip()
+                          item_description = (item.findtext('description') or '').strip()
+
+                          if not item_title:
+                              errors.append(f'{prefix}: title is empty')
+                          if not item_description:
+                              errors.append(f'{prefix}: description is empty')
+                          if not item_link:
+                              errors.append(f'{prefix}: link is empty')
+                              continue
+
+                          parsed = urlparse(item_link)
+                          if parsed.scheme != 'https' or parsed.netloc.lower() != SITE_HOST:
+                              errors.append(f'{prefix}: link is not on the canonical HTTPS academy domain: {item_link}')
+                          if not parsed.path.startswith('/guides/') or parsed.path == '/guides/':
+                              errors.append(f'{prefix}: link is not an individual guide URL: {item_link}')
+
+                          if item_link in seen_links:
+                              errors.append(f'{prefix}: duplicate item link {item_link}')
+                          seen_links.add(item_link)
+
+                          if item_guid != item_link:
+                              errors.append(f'{prefix}: guid must match the canonical item link')
+                          if item_guid in seen_guids:
+                              errors.append(f'{prefix}: duplicate guid {item_guid}')
+                          seen_guids.add(item_guid)
+
+                          guid_node = item.find('guid')
+                          if guid_node is None or guid_node.attrib.get('isPermaLink') != 'true':
+                              errors.append(f'{prefix}: guid must declare isPermaLink="true"')
+
+                          if item_date:
+                              try:
+                                  email.utils.parsedate_to_datetime(item_date)
+                              except Exception:
+                                  errors.append(f'{prefix}: invalid pubDate {item_date!r}')
+                          else:
+                              errors.append(f'{prefix}: pubDate is missing')
+
+                          target = local_target(item_link)
+                          if target is None:
+                              errors.append(f'{prefix}: link points to a missing local guide: {item_link}')
+
+          if errors:
+              print('RSS validation failed:')
+              for error in errors:
+                  print(f'  - {error}')
+              sys.exit(1)
+
+          print(f'RSS validation passed: {len(seen_links)} unique engineering guide items checked.')
+          PY
