@@ -90,3 +90,44 @@ jobs:
 
           print(f'Download-link validation passed: {checked} referenced downloadable files checked.')
           PY
+
+      - name: Ensure removed chiller resource library stays removed
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import sys
+
+          ROOT = Path('.').resolve()
+          forbidden_paths = [
+              ROOT / 'downloads' / 'chiller',
+              ROOT / 'resource-library' / 'chiller.html',
+          ]
+          forbidden_references = (
+              'downloads/chiller/',
+              '/downloads/chiller/',
+              'resource-library/chiller.html',
+              '/resource-library/chiller.html',
+          )
+          errors = []
+
+          for path in forbidden_paths:
+              if path.exists():
+                  errors.append(f'forbidden removed chiller resource path exists: {path.relative_to(ROOT)}')
+
+          for html_file in ROOT.rglob('*.html'):
+              text = html_file.read_text(encoding='utf-8', errors='ignore')
+              for reference in forbidden_references:
+                  if reference in text:
+                      errors.append(
+                          f'{html_file.relative_to(ROOT)}: references removed chiller resource path {reference!r}'
+                      )
+
+          if errors:
+              print('Removed chiller-resource guard failed:')
+              for error in errors:
+                  print(f'  - {error}')
+              sys.exit(1)
+
+          print('Removed chiller-resource guard passed.')
+          PY
