@@ -45,27 +45,7 @@
     return;
   }
 
-  const accountStyles=()=>{
-    if(document.getElementById('sea-account-styles')) return;
-    const style=document.createElement('style');
-    style.id='sea-account-styles';
-    style.textContent=`
-      .sea-account-actions{display:flex;align-items:center;gap:8px;margin-left:auto;white-space:nowrap}
-      .sea-account-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 13px;border-radius:9px;text-decoration:none;font:700 12px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.01em;transition:.2s ease}
-      .sea-signin{color:#dcebf4;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.03)}
-      .sea-signup{color:#04131d;background:#63dcff;border:1px solid #63dcff}
-      .sea-account-chip{display:flex;align-items:center;gap:9px;max-width:270px;padding:7px 9px 7px 11px;border:1px solid rgba(255,255,255,.15);border-radius:10px;background:rgba(255,255,255,.04);color:#dcebf4;font:12px/1.2 system-ui,-apple-system,Segoe UI,sans-serif}
-      .sea-account-chip strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
-      .sea-signout{border:0;background:none;color:#63dcff;cursor:pointer;padding:2px 3px;font:700 11px/1 system-ui,-apple-system,Segoe UI,sans-serif}
-      .sea-account-floating{position:fixed;top:16px;right:16px;z-index:9999;background:#07131f;padding:8px;border:1px solid rgba(255,255,255,.14);border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.25)}
-      @media(max-width:980px){.sea-account-actions{gap:6px}.sea-account-link{padding:8px 10px}.sea-account-chip{max-width:210px}}
-      @media(max-width:760px){.sea-account-actions{width:100%;margin:8px 0 0;justify-content:flex-end}.sea-account-chip{max-width:100%}}
-    `;
-    document.head.appendChild(style);
-  };
-
   const mountAccountUI=()=>{
-    accountStyles();
     document.querySelectorAll('.sea-account-actions').forEach(x=>x.remove());
     const user=getUser();
     const wrap=document.createElement('div');
