@@ -19,7 +19,7 @@
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="nav"><div class="container nav-inner"><a class="brand" href="index.html"><div class="brand-mark">SEA</div><div class="brand-copy"><strong>Sajjad's Engineering Academy</strong><small>My Learning</small></div></a><button class="menu" aria-label="Open navigation">☰</button><nav class="nav-links" aria-label="Primary navigation"><a href="courses.html">Explore Free Courses</a><a href="guides/">Guides</a><a href="tools/">Tools</a><a class="active" href="student-dashboard.html">My Learning</a></nav></div></header>
 <div class="dashboard-shell">
-<aside class="sidebar"><div class="side-profile"><div class="avatar" data-lms-avatar>LR</div><strong data-lms-name>Learner</strong><small>Browser-local learning profile</small></div><nav class="side-nav" aria-label="Learner dashboard sections"><a class="active" href="#overview">Dashboard</a><a href="#learning">My Courses</a><a href="#saved">Saved Learning</a><a href="#quiz">Knowledge Check</a><a href="#insights">Learning Insights</a><a href="#goals">Weekly Goal</a><a href="#activity">Learning History</a><a href="#profile">Profile</a></nav></aside>
+<aside class="sidebar"><div class="side-profile"><div class="avatar" data-lms-avatar>LR</div><strong data-lms-name>Learner</strong><small>Browser-local learning profile</small></div><nav class="side-nav" aria-label="Learner dashboard sections"><a class="active" href="#overview">Dashboard</a><a href="#learning">My Courses</a><a href="#saved">Saved Learning</a><a href="#quiz">Knowledge Checks</a><a href="#insights">Learning Insights</a><a href="#goals">Weekly Goal</a><a href="#activity">Learning History</a><a href="#profile">Profile</a></nav></aside>
 <main class="dash-content" id="main-content" data-lms-dashboard>
 <div class="dash-head" id="overview"><div><h1>Welcome back, <span data-lms-name>Learner</span>.</h1><p>Your enrolments, saved learning, module progress, quiz results, weekly goal and learning streak are stored on this browser.</p></div><a class="btn btn-primary" href="courses.html">Explore free courses →</a></div>
 <div class="lms-status"><strong>Current LMS mode:</strong> functional browser-local learning. Your progress and available knowledge-check attempts work on this device/browser now. Cross-device accounts, centralized reporting, assignments and certificates still require the future production backend.</div>
@@ -30,7 +30,7 @@
 <section class="panel" id="saved"><h2>Saved for later</h2><div class="lms-list" data-lms-saved-list></div></section>
 </div>
 <div>
-<section class="panel" id="quiz"><h2>HVAC knowledge check</h2><div class="lms-quiz-score" style="width:100%"><small>Best browser-local score</small><strong data-lms-quiz-best>Not attempted</strong><small style="margin-top:8px">Attempts: <span data-lms-quiz-attempts>0</span></small></div><a class="btn btn-secondary" style="margin-top:12px" href="course.html#knowledge-check">Take or retry knowledge check</a><p class="lms-local-note">The five-question check covers practical AHU diagnostics, sensors, VFD safety, water-side reasoning and RCA. Attempts are stored only on this browser.</p></section>
+<section class="panel" id="quiz"><h2>Knowledge checks</h2><div class="lms-list"><div class="lms-item"><div class="lms-item-icon">HVAC</div><div><h3>HVAC Troubleshooting Knowledge Check</h3><p>Best score: <strong data-lms-quiz-best>Not attempted</strong> · Attempts: <span data-lms-quiz-attempts>0</span></p></div><a class="btn btn-secondary" href="course.html#knowledge-check">Take / retry</a></div><div class="lms-item"><div class="lms-item-icon">RCA</div><div><h3>RCA &amp; 5-Why Knowledge Check</h3><p>Best score: <strong data-lms-rca-quiz-best>Not attempted</strong> · Attempts: <span data-lms-rca-quiz-attempts>0</span></p></div><a class="btn btn-secondary" href="quiz-rca.html">Take / retry</a></div></div><p class="lms-local-note">Knowledge-check attempts are learning self-assessments stored only on this browser. They are not accredited examinations or centralized competency records.</p></section>
 <section class="panel" id="insights"><h2>Learning streak &amp; 7-day summary</h2><div data-lms-insights></div></section>
 <section class="panel" id="goals"><h2>Weekly learning goal</h2><div data-lms-weekly-goal></div></section>
 <section class="panel" id="activity"><h2>Recent learning activity</h2><div class="lms-activity" data-lms-activity-list></div></section>
@@ -42,6 +42,6 @@
 <div class="lms-live" aria-live="polite" aria-atomic="true" data-lms-live></div>
 </main>
 </div>
-<script src="marketplace.js"></script><script src="/auth.js" data-protect></script><script src="lms.js"></script><script src="lms-goals.js"></script><script src="lms-insights.js"></script><script src="lms-quiz.js"></script>
+<script src="marketplace.js"></script><script src="/auth.js" data-protect></script><script src="lms.js"></script><script src="lms-goals.js"></script><script src="lms-insights.js"></script><script src="lms-quiz.js"></script><script src="lms-quiz-rca.js"></script>
 </body>
 </html>
