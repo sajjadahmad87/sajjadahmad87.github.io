@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Learning | Sajjad's Engineering Academy</title>
-<meta name="description" content="Browser-local learner dashboard for Sajjad's Engineering Academy with saved courses, enrolments, module progress, weekly goals, learning streaks, quiz analytics, skills trends, learning roadmap and activity history.">
+<meta name="description" content="Browser-local learner dashboard for Sajjad's Engineering Academy with saved courses, enrolments, module progress, weekly goals, learning streaks, quiz analytics, skills trends, role development roadmap and activity history.">
 <meta name="robots" content="noindex,follow">
 <meta name="theme-color" content="#07111b">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -19,14 +19,15 @@
 <a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="nav"><div class="container nav-inner"><a class="brand" href="index.html"><div class="brand-mark">SEA</div><div class="brand-copy"><strong>Sajjad's Engineering Academy</strong><small>My Learning</small></div></a><button class="menu" aria-label="Open navigation">☰</button><nav class="nav-links" aria-label="Primary navigation"><a href="courses.html">Explore Free Courses</a><a href="guides/">Guides</a><a href="tools/">Tools</a><a class="active" href="student-dashboard.html">My Learning</a></nav></div></header>
 <div class="dashboard-shell">
-<aside class="sidebar"><div class="side-profile"><div class="avatar" data-lms-avatar>LR</div><strong data-lms-name>Learner</strong><small>Browser-local learning profile</small></div><nav class="side-nav" aria-label="Learner dashboard sections"><a class="active" href="#overview">Dashboard</a><a href="#learning">My Courses</a><a href="#saved">Saved Learning</a><a href="#quiz">Knowledge Checks</a><a href="#assessment-analytics">Assessment Analytics</a><a href="#skills-matrix">Skills Progress</a><a href="#skills-roadmap">Skills Roadmap</a><a href="#insights">Learning Insights</a><a href="#goals">Weekly Goal</a><a href="#activity">Learning History</a><a href="#profile">Profile</a></nav></aside>
+<aside class="sidebar"><div class="side-profile"><div class="avatar" data-lms-avatar>LR</div><strong data-lms-name>Learner</strong><small>Browser-local learning profile</small></div><nav class="side-nav" aria-label="Learner dashboard sections"><a class="active" href="#overview">Dashboard</a><a href="#learning">My Courses</a><a href="#saved">Saved Learning</a><a href="#quiz">Knowledge Checks</a><a href="#assessment-analytics">Assessment Analytics</a><a href="#skills-matrix">Skills Progress</a><a href="#skills-roadmap">Skills Roadmap</a><a href="#role-roadmap">Role Development</a><a href="#insights">Learning Insights</a><a href="#goals">Weekly Goal</a><a href="#activity">Learning History</a><a href="#profile">Profile</a></nav></aside>
 <main class="dash-content" id="main-content" data-lms-dashboard>
-<div class="dash-head" id="overview"><div><h1>Welcome back, <span data-lms-name>Learner</span>.</h1><p>Your enrolments, saved learning, module progress, quiz results, skills trends, learning roadmap, weekly goal and learning streak are stored on this browser.</p></div><a class="btn btn-primary" href="courses.html">Explore free courses →</a></div>
+<div class="dash-head" id="overview"><div><h1>Welcome back, <span data-lms-name>Learner</span>.</h1><p>Your enrolments, saved learning, module progress, quiz results, skills trends, role development roadmap, weekly goal and learning streak are stored on this browser.</p></div><a class="btn btn-primary" href="courses.html">Explore free courses →</a></div>
 <div class="lms-status"><strong>Current LMS mode:</strong> functional browser-local learning. Your progress and available knowledge-check attempts work on this device/browser now. Cross-device accounts, centralized reporting, assignments and certificates still require the future production backend.</div>
 <div class="dash-cards" style="margin-top:18px"><div class="dash-card"><small>Enrolled paths</small><strong data-lms-enrolled-count>0</strong></div><div class="dash-card"><small>Modules completed</small><strong data-lms-completed-count>0</strong></div><div class="dash-card"><small>Saved learning</small><strong data-lms-saved-count>0</strong></div><div class="dash-card"><small>Learning actions</small><strong data-lms-activity-count>0</strong></div></div>
 <section class="panel" id="assessment-analytics"><h2>Assessment analytics</h2><p class="lms-local-note">Use your results to identify strong topics and the knowledge area that would benefit most from review.</p><div data-lms-assessment-analytics></div></section>
 <section class="panel" id="skills-matrix"><h2>Skills progress matrix</h2><p class="lms-local-note">Compare your earliest and latest self-assessment results across the available engineering knowledge areas.</p><div data-lms-skills-matrix></div></section>
 <section class="panel" id="skills-roadmap"><h2>Skills-gap learning roadmap</h2><p class="lms-local-note">Turn your latest self-assessment results into staged Beginner → Intermediate → Advanced study objectives and direct next-learning actions.</p><div data-lms-skills-roadmap></div></section>
+<section class="panel" id="role-roadmap"><h2>Role-based development map</h2><p class="lms-local-note">Choose a Maintenance Technician, Maintenance Engineer or Senior / Lead Engineer learning target and compare your current self-assessment coverage with a transparent study benchmark.</p><div data-lms-role-roadmap></div></section>
 <div class="lms-dashboard-grid">
 <div>
 <section class="panel" id="learning"><h2>My enrolled learning paths</h2><div class="lms-list" data-lms-learning-list></div></section>
@@ -45,6 +46,6 @@
 <div class="lms-live" aria-live="polite" aria-atomic="true" data-lms-live></div>
 </main>
 </div>
-<script src="marketplace.js"></script><script src="/auth.js" data-protect></script><script src="lms.js"></script><script src="lms-goals.js"></script><script src="lms-insights.js"></script><script src="lms-quiz.js"></script><script src="lms-quiz-rca.js"></script><script src="lms-quiz-ppm.js"></script><script src="lms-quiz-electrical.js"></script><script src="lms-assessment-analytics.js"></script><script src="lms-skills-matrix.js"></script><script src="lms-skills-roadmap.js"></script>
+<script src="marketplace.js"></script><script src="/auth.js" data-protect></script><script src="lms.js"></script><script src="lms-goals.js"></script><script src="lms-insights.js"></script><script src="lms-quiz.js"></script><script src="lms-quiz-rca.js"></script><script src="lms-quiz-ppm.js"></script><script src="lms-quiz-electrical.js"></script><script src="lms-assessment-analytics.js"></script><script src="lms-skills-matrix.js"></script><script src="lms-skills-roadmap.js"></script><script src="lms-role-roadmap.js"></script>
 </body>
 </html>
