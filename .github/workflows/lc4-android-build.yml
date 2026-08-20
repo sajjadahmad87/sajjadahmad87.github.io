@@ -7,6 +7,11 @@ on:
     paths:
       - 'lc4-android-release/**'
       - '.github/workflows/lc4-android-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lc4-android-release/**'
+      - '.github/workflows/lc4-android-build.yml'
 
 permissions:
   contents: read
