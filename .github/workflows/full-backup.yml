@@ -1,0 +1,59 @@
+name: Academy Full Backup
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/full-backup.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "15 22 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out complete repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build restorable backup package
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATE="$(date -u +%Y-%m-%d)"
+          mkdir -p backup
+          git archive --format=zip --output="backup/Sajjad_Engineering_Academy_Source_${DATE}.zip" HEAD
+          git bundle create "backup/Sajjad_Engineering_Academy_History_${DATE}.bundle" --all
+          cat > "backup/RESTORE_INSTRUCTIONS.txt" <<'EOF'
+          Sajjad's Engineering Academy backup
+
+          Contents:
+          1. Source ZIP: complete deployable website source at the backed-up commit.
+          2. Git bundle: complete Git repository history for disaster recovery.
+
+          Restore source only:
+          - Extract the Source ZIP into a new repository and publish it.
+
+          Restore full Git history:
+          - git clone Sajjad_Engineering_Academy_History_YYYY-MM-DD.bundle restored-site
+          - cd restored-site
+          - git remote add origin <new-repository-url>
+          - git push -u origin main
+
+          Important:
+          Browser-local learner progress stored in localStorage is not part of the website repository backup.
+          EOF
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sajjad-engineering-academy-full-backup
+          path: backup/
+          retention-days: 90
+          if-no-files-found: error
