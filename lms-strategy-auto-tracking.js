@@ -44,6 +44,13 @@
     const hasNew=Array.isArray(entries)&&entries.some(entry=>(Date.parse(entry?.createdAt||0)||0)>=started);
     if(hasNew&&saveTask(1,'practical-logbook-entry-saved'))announce('Practical reflection task recorded from your new logbook entry.');
   };
+  const loadHistoryFilter=()=>{
+    if(document.querySelector('script[src="/lms-strategy-history-filter.js"]'))return;
+    const script=document.createElement('script');
+    script.src='/lms-strategy-history-filter.js';
+    script.defer=true;
+    document.body.appendChild(script);
+  };
   document.addEventListener('click',event=>{
     const anchor=event.target.closest('[data-lms-strategy-outcomes] a[href]');
     if(anchor)trackLinkedResource(anchor);
@@ -51,6 +58,6 @@
   document.addEventListener('submit',event=>{
     if(event.target.closest('[data-log-form]'))setTimeout(trackLogbookReflection,0);
   });
-  document.addEventListener('DOMContentLoaded',trackLogbookReflection);
+  document.addEventListener('DOMContentLoaded',()=>{trackLogbookReflection();loadHistoryFilter();});
   window.addEventListener('storage',event=>{if(event.key===LOG_KEY)trackLogbookReflection();});
 })();
