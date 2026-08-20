@@ -62,7 +62,26 @@
       <p class="lms-local-note">Attention signals use only browser-local self-assessment and archived study-plan history. A repeated or lower score means the study approach may need adjustment; it is not a diagnosis of competence, job performance, promotion readiness, certification status, or authorization to perform technical work.</p>`;
   };
 
-  document.addEventListener('DOMContentLoaded',render);
+  const mountStrategyTracker=()=>{
+    const attention=document.getElementById('development-attention');
+    if(!attention||document.querySelector('[data-lms-strategy-outcomes]'))return;
+    const section=document.createElement('section');
+    section.className='panel';
+    section.id='strategy-outcomes';
+    section.innerHTML='<h2>Study strategy outcome tracker</h2><p class="lms-local-note">When repeated study is not improving a self-check result, test a different learning method and compare the first fresh reassessment with the saved baseline.</p><div data-lms-strategy-outcomes></div>';
+    attention.insertAdjacentElement('afterend',section);
+    const nav=document.querySelector('.side-nav');
+    if(nav&&!nav.querySelector('a[href="#strategy-outcomes"]')){
+      const link=document.createElement('a');link.href='#strategy-outcomes';link.textContent='Strategy Outcomes';
+      const attentionLink=nav.querySelector('a[href="#development-attention"]');
+      if(attentionLink)attentionLink.insertAdjacentElement('afterend',link);else nav.appendChild(link);
+    }
+    if(!document.querySelector('script[src="/lms-strategy-outcomes.js"]')){
+      const script=document.createElement('script');script.src='/lms-strategy-outcomes.js';script.defer=true;document.body.appendChild(script);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>{render();mountStrategyTracker();});
   window.addEventListener('storage',render);
   document.addEventListener('submit',e=>{if(e.target.closest('form[data-lms-quiz]'))setTimeout(render,0)});
   document.addEventListener('click',e=>{if(e.target.closest('[data-role-plan-refresh]'))setTimeout(render,0)});
