@@ -1,0 +1,3 @@
+LC4 Android build trigger
+Date: 20 August 2026
+Purpose: Trigger pull_request workflow for signed AAB/APK build.
