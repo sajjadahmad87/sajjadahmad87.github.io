@@ -1,0 +1,86 @@
+name: Build LC4 Spare Parts Android Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lc4-android-release/**'
+      - '.github/workflows/lc4-android-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore Android project
+        run: |
+          mkdir -p lc4-android-build
+          cat lc4-android-release/source.part00 lc4-android-release/source.part01 lc4-android-release/source.part02 lc4-android-release/source.part03 | base64 --decode | tar -xz -C lc4-android-build
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 16 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Set up Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Restore public Google Play upload keystore
+        working-directory: lc4-android-build
+        run: |
+          mkdir -p signing
+          base64 --decode lc4-upload-key.jks.b64 > signing/lc4-upload-key.jks
+          keytool -list -v -keystore signing/lc4-upload-key.jks \
+            -storepass 'knAJTVB-jozUYYqDmfrPL%2XfNj2' -alias lc4upload | grep -E 'Alias name|SHA256'
+
+      - name: Build signed Play AAB and test APK
+        working-directory: lc4-android-build
+        run: gradle --no-daemon clean bundleRelease assembleRelease
+
+      - name: Verify release outputs
+        working-directory: lc4-android-build
+        run: |
+          test -f app/build/outputs/bundle/release/app-release.aab
+          test -f app/build/outputs/apk/release/app-release.apk
+          sha256sum app/build/outputs/bundle/release/app-release.aab | tee app-release.aab.sha256
+          sha256sum app/build/outputs/apk/release/app-release.apk | tee app-release.apk.sha256
+          ls -lh app/build/outputs/bundle/release/app-release.aab app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload Play AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: LC4-Spare-Parts-Play-AAB-v1.0.0
+          path: |
+            lc4-android-build/app/build/outputs/bundle/release/app-release.aab
+            lc4-android-build/app-release.aab.sha256
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LC4-Spare-Parts-Test-APK-v1.0.0
+          path: |
+            lc4-android-build/app/build/outputs/apk/release/app-release.apk
+            lc4-android-build/app-release.apk.sha256
+          if-no-files-found: error
+          retention-days: 90
