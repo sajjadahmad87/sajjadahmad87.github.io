@@ -67,5 +67,6 @@
     }
   };
 
-  document.addEventListener('DOMContentLoaded',()=>{mountCourseNotes();mountDashboard()});
+  const init=()=>{mountCourseNotes();mountDashboard()};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
