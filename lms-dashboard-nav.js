@@ -70,4 +70,37 @@
     mutationObserver._timer=setTimeout(observeSections,60);
   });
   mutationObserver.observe(nav,{childList:true,subtree:true});
+
+  const enhanceResumeTarget=()=>{
+    const resume=root.querySelector('[data-lms-resume]');
+    const resumeLink=resume?.querySelector('a.btn-primary');
+    if(!resumeLink)return;
+
+    let state=null;
+    try{state=JSON.parse(localStorage.getItem('sea_lms_state_v1')||'null')}catch{return}
+    const progress=state?.progress?.['industrial-hvac-troubleshooting']?.modules;
+    if(!progress||!resumeLink.getAttribute('href')?.endsWith('/course.html'))return;
+
+    const modules=[
+      {id:'fundamentals',title:'HVAC Fundamentals',href:'/course.html#module-fundamentals'},
+      {id:'airside',title:'AHU & Airside Diagnostics',href:'/guides/ahu-troubleshooting/'},
+      {id:'waterside',title:'Water-side Troubleshooting',href:'/course.html#module-waterside'},
+      {id:'controls-rca',title:'Controls, Sensors & RCA',href:'/guides/root-cause-analysis-5-why/'}
+    ];
+    const next=modules.find(module=>!progress[module.id]);
+    if(!next)return;
+
+    resumeLink.href=next.href;
+    resumeLink.textContent='Resume next module';
+    resumeLink.setAttribute('aria-label','Resume next module: '+next.title);
+    const summary=resume.querySelector('.lms-item p');
+    if(summary&&!summary.querySelector?.('[data-lms-next-module]')){
+      summary.insertAdjacentHTML('beforeend',' · <strong data-lms-next-module></strong>');
+      const nextLabel=summary.querySelector('[data-lms-next-module]');
+      if(nextLabel)nextLabel.textContent='Next: '+next.title;
+    }
+  };
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhanceResumeTarget,{once:true});
+  else enhanceResumeTarget();
 })();
