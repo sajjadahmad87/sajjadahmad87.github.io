@@ -101,6 +101,83 @@
     }
   };
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhanceResumeTarget,{once:true});
-  else enhanceResumeTarget();
+  const readLocal=key=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
+  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
+  const renderNextBestAction=()=>{
+    let panel=root.querySelector('[data-lms-next-best-action]');
+    if(!panel){
+      panel=document.createElement('section');
+      panel.className='panel';
+      panel.id='next-best-action';
+      panel.dataset.lmsNextBestAction='';
+      panel.setAttribute('aria-labelledby','next-best-action-title');
+      const status=root.querySelector('.lms-status');
+      if(status)status.insertAdjacentElement('afterend',panel);
+      else root.prepend(panel);
+    }
+
+    const state=readLocal('sea_lms_state_v1')||{};
+    const enrolled=state.enrolled&&typeof state.enrolled==='object'?state.enrolled:{};
+    const saved=Array.isArray(state.saved)?state.saved:[];
+    const hvacModules=state.progress?.['industrial-hvac-troubleshooting']?.modules||{};
+    const hvacSequence=[
+      {id:'fundamentals',title:'HVAC Fundamentals',href:'/course.html#module-fundamentals'},
+      {id:'airside',title:'AHU & Airside Diagnostics',href:'/guides/ahu-troubleshooting/'},
+      {id:'waterside',title:'Water-side Troubleshooting',href:'/course.html#module-waterside'},
+      {id:'controls-rca',title:'Controls, Sensors & RCA',href:'/guides/root-cause-analysis-5-why/'}
+    ];
+    const quizzes=[
+      {key:'sea_lms_quiz_v1',title:'HVAC troubleshooting knowledge check',href:'/course.html#knowledge-check'},
+      {key:'sea_lms_quiz_rca_v1',title:'RCA & 5-Why knowledge check',href:'/quiz-rca.html'},
+      {key:'sea_lms_quiz_ppm_v1',title:'Preventive maintenance & PPM knowledge check',href:'/quiz-ppm.html'},
+      {key:'sea_lms_quiz_electrical_v1',title:'Electrical troubleshooting knowledge check',href:'/quiz-electrical.html'}
+    ];
+
+    let action=null;
+    if(enrolled['industrial-hvac-troubleshooting']){
+      const nextModule=hvacSequence.find(module=>!hvacModules[module.id]);
+      if(nextModule)action={eyebrow:'CONTINUE YOUR PATH',title:nextModule.title,detail:'Continue the first unfinished module in your enrolled HVAC learning path.',href:nextModule.href,label:'Continue module'};
+    }
+
+    if(!action){
+      const notes=readLocal('sea_lms_course_notes_v1');
+      const reviewCount=notes&&typeof notes==='object'?Object.values(notes).filter(note=>note&&note.needsReview).length:0;
+      if(reviewCount>0)action={eyebrow:'REVISION QUEUE',title:`Review ${reviewCount} saved study note${reviewCount===1?'':'s'}`,detail:'Clear items you previously marked for review before adding more study material.',href:'#study-notes',label:'Open revision queue'};
+    }
+
+    if(!action){
+      const unattempted=quizzes.find(quiz=>{
+        const data=readLocal(quiz.key);
+        return !Array.isArray(data?.attempts)||data.attempts.length===0;
+      });
+      if(unattempted)action={eyebrow:'KNOWLEDGE CHECK',title:unattempted.title,detail:'Use a short self-assessment to identify which topic would benefit most from review.',href:unattempted.href,label:'Take knowledge check'};
+    }
+
+    if(!action){
+      const retry=quizzes.map(quiz=>{
+        const attempts=readLocal(quiz.key)?.attempts;
+        if(!Array.isArray(attempts)||!attempts.length)return null;
+        const best=Math.max(...attempts.map(item=>Number(item?.total)>0?(Number(item.score)||0)/Number(item.total):0));
+        return {...quiz,best};
+      }).filter(Boolean).sort((a,b)=>a.best-b.best)[0];
+      if(retry&&retry.best<0.8)action={eyebrow:'TARGETED REVIEW',title:`Revisit ${retry.title}`,detail:`Your best saved result is ${Math.round(retry.best*100)}%. Review the explanations and retry when ready.`,href:retry.href,label:'Review and retry'};
+    }
+
+    if(!action&&Object.keys(enrolled).length===0){
+      action=saved.length?{eyebrow:'START LEARNING',title:'Open a saved learning path',detail:'Turn one of your saved topics into an active learning path.',href:'#saved',label:'View saved learning'}:{eyebrow:'START LEARNING',title:'Choose your first engineering learning path',detail:'Browse the free course library and enrol in a topic that matches your current development need.',href:'/courses.html',label:'Explore free courses'};
+    }
+
+    if(!action)action={eyebrow:'KEEP MOMENTUM',title:'Continue your most recent learning path',detail:'Your core learning checks are up to date. Continue with your enrolled material or practical reflection.',href:'#learning',label:'Open my courses'};
+
+    panel.innerHTML=`<div class="label">${esc(action.eyebrow)}</div><h2 id="next-best-action-title" style="margin:8px 0 6px">Next best learning action</h2><div class="lms-item"><div class="lms-item-icon">NEXT</div><div><h3>${esc(action.title)}</h3><p>${esc(action.detail)}</p></div><a class="btn btn-primary" href="${esc(action.href)}">${esc(action.label)}</a></div><p class="lms-local-note">This recommendation is generated only from learning activity stored on this browser. It is a study aid, not a competency, certification or assessment decision.</p>`;
+  };
+
+  const enhanceDashboard=()=>{
+    enhanceResumeTarget();
+    renderNextBestAction();
+  };
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhanceDashboard,{once:true});
+  else enhanceDashboard();
 })();
