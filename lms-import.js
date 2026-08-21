@@ -2,6 +2,7 @@
   const ACCOUNT_KEY='sea_account_v2';
   const LMS_KEY='sea_lms_state_v1';
   const LMS_PREFIX='sea_lms_';
+  const BACKUP_META_KEY='sea_lms_backup_meta';
   const FORMAT='sea-portable-learning-backup';
   const VERSION=1;
   const MAX_FILE_BYTES=8*1024*1024;
@@ -12,6 +13,7 @@
   const announce=(message)=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
   const email=()=>String(read(ACCOUNT_KEY)?.email||'').trim().toLowerCase();
   const safeKey=(key)=>typeof key==='string'&&key.startsWith(LMS_PREFIX)&&/^sea_lms_[a-z0-9_-]+$/i.test(key);
+  const formatWhen=(iso)=>{if(!iso)return 'Not yet';const d=new Date(iso);return Number.isNaN(d.getTime())?'Unknown':d.toLocaleString([], {dateStyle:'medium',timeStyle:'short'})};
 
   const validLearning=(x)=>{
     if(!x||typeof x!=='object'||Array.isArray(x)) return false;
@@ -35,7 +37,7 @@
     const storage={};
     for(let i=0;i<localStorage.length;i++){
       const key=localStorage.key(i);
-      if(!safeKey(key))continue;
+      if(!safeKey(key)||key===BACKUP_META_KEY)continue;
       const raw=localStorage.getItem(key);
       if(raw==null)continue;
       try{storage[key]=JSON.parse(raw)}catch{/* Skip corrupt local values. */}
@@ -43,13 +45,56 @@
     return storage;
   };
 
+  const stableStringify=(value)=>{
+    if(value===null||typeof value!=='object')return JSON.stringify(value);
+    if(Array.isArray(value))return '['+value.map(stableStringify).join(',')+']';
+    return '{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+stableStringify(value[key])).join(',')+'}';
+  };
+  const fingerprint=(storage)=>{
+    const text=stableStringify(storage);
+    let hash=2166136261;
+    for(let i=0;i<text.length;i++){
+      hash^=text.charCodeAt(i);
+      hash=Math.imul(hash,16777619);
+    }
+    return (hash>>>0).toString(16).padStart(8,'0');
+  };
+  const writeBackupMeta=(meta)=>localStorage.setItem(BACKUP_META_KEY,JSON.stringify(meta));
+
+  const renderBackupHealth=()=>{
+    const exportBtn=document.querySelector('[data-lms-export]');
+    const panel=exportBtn?.closest('.panel');
+    if(!panel)return;
+    let box=panel.querySelector('[data-lms-backup-health]');
+    if(!box){
+      box=document.createElement('div');
+      box.dataset.lmsBackupHealth='';
+      box.className='notice';
+      const note=panel.querySelector('.lms-local-note');
+      if(note)note.insertAdjacentElement('beforebegin',box);else panel.appendChild(box);
+    }
+    const storage=collectStorage();
+    const currentHash=fingerprint(storage);
+    const meta=read(BACKUP_META_KEY);
+    if(!meta?.hash){
+      box.innerHTML='<strong>Backup health:</strong> No complete learner backup has been recorded on this browser yet. Export one now so you have a portable recovery copy.';
+      return;
+    }
+    const current=meta.hash===currentHash;
+    const label=current?'Current':'Update recommended';
+    const detail=current?'Your browser-local LMS record matches the last recorded backup state.':'Your browser-local LMS record has changed since the last recorded backup. Export a fresh copy to preserve the latest progress.';
+    box.innerHTML=`<strong>Backup health: ${label}</strong><br>Last backup state: ${formatWhen(meta.lastBackupAt)} · ${meta.keyCount||Object.keys(storage).length} LMS data sets.<br>${detail}`;
+  };
+
   const exportComplete=()=>{
     const account=read(ACCOUNT_KEY)||{};
     const storage=collectStorage();
+    const exportedAt=new Date().toISOString();
+    const stateHash=fingerprint(storage);
     const payload={
       format:FORMAT,
       version:VERSION,
-      exportedAt:new Date().toISOString(),
+      exportedAt,
       learner:{email:account.email||null,name:account.name||null},
       storage
     };
@@ -59,6 +104,8 @@
     a.download=`SEA-complete-learning-backup-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    writeBackupMeta({lastBackupAt:exportedAt,hash:stateHash,keyCount:Object.keys(storage).length,source:'export'});
+    renderBackupHealth();
     announce(`Complete learner backup exported with ${Object.keys(storage).length} LMS data sets.`);
   };
 
@@ -68,7 +115,7 @@
     const keys=Object.keys(payload.storage);
     if(!keys.length||keys.length>MAX_KEYS)throw new Error('Invalid storage key count');
     keys.forEach(key=>{
-      if(!safeKey(key))throw new Error('Unsafe storage key');
+      if(!safeKey(key)||key===BACKUP_META_KEY)throw new Error('Unsafe storage key');
       const encoded=JSON.stringify(payload.storage[key]);
       if(encoded.length>MAX_VALUE_BYTES)throw new Error('Storage value too large');
       JSON.parse(encoded);
@@ -86,6 +133,7 @@
     if(!confirm(`Restore ${keys.length} SEA LMS data sets from this complete backup? Matching local LMS data will be replaced. Your sign-in/session data is not changed.`))return false;
     const prepared=keys.map(key=>[key,JSON.stringify(payload.storage[key])]);
     prepared.forEach(([key,value])=>localStorage.setItem(key,value));
+    writeBackupMeta({lastBackupAt:payload.exportedAt||new Date().toISOString(),hash:fingerprint(payload.storage),keyCount:keys.length,source:'restore',restoredAt:new Date().toISOString()});
     announce('Complete learner backup restored successfully. Reloading dashboard…');
     setTimeout(()=>location.reload(),350);
     return true;
@@ -102,6 +150,7 @@
     }
     if(!confirm('Restore this older SEA core learning-progress backup? Existing core LMS progress will be replaced; newer auxiliary LMS data will remain unchanged.'))return false;
     localStorage.setItem(LMS_KEY,JSON.stringify(normalizeLearning(learning)));
+    localStorage.removeItem(BACKUP_META_KEY);
     announce('Older core learning-progress backup restored successfully. Reloading dashboard…');
     setTimeout(()=>location.reload(),350);
     return true;
@@ -118,7 +167,8 @@
     if(importBtn)importBtn.textContent='Restore learner backup';
     const panel=exportBtn?.closest('.panel');
     const note=panel?.querySelector('.lms-local-note');
-    if(note)note.innerHTML='<strong>Complete portable backup:</strong> export now includes all SEA browser-local LMS data sets, including enrolments, module progress, quiz attempts, practical logbook, goals, role plans, learning-plan history, and study-strategy analytics. Restore validates the file and learner email before replacing matching LMS data. Sign-in/session data is never imported. Older core-only SEA backups remain supported.';
+    if(note)note.innerHTML='<strong>Complete portable backup:</strong> export includes all SEA browser-local LMS data sets, including enrolments, module progress, quiz attempts, practical logbook, goals, role plans, learning-plan history, and study-strategy analytics. The backup-health indicator tells you when your local learning record has changed since the last recorded backup. Restore validates the file and learner email before replacing matching LMS data. Sign-in/session data is never imported. Older core-only SEA backups remain supported.';
+    renderBackupHealth();
     if(!importBtn||!input)return;
     importBtn.addEventListener('click',()=>input.click());
     input.addEventListener('change',()=>{
