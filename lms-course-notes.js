@@ -16,6 +16,17 @@
     'boiler-steam-efficiency':'Boiler & Steam System Efficiency',
     'engineering-management':'Engineering Management: KPI, CAPEX, OPEX & Teams'
   }[id]||id.replace(/-/g,' '));
+  const courseCategory=id=>({
+    'industrial-hvac-troubleshooting':'HVAC',
+    'root-cause-analysis':'Maintenance & Reliability',
+    'plc-automation-fundamentals':'PLC & Automation',
+    'electrical-troubleshooting':'Electrical',
+    'preventive-maintenance-ppm':'Maintenance & Reliability',
+    'utilities-optimization':'Energy & Utilities',
+    'solar-pv-battery':'Energy & Utilities',
+    'boiler-steam-efficiency':'Energy & Utilities',
+    'engineering-management':'Engineering Management'
+  }[id]||'Other');
   const courseHref=id=>id==='industrial-hvac-troubleshooting'?'course.html':'courses.html#'+encodeURIComponent(id);
   const formatWhen=iso=>{const d=new Date(iso||'');return Number.isNaN(d.getTime())?'':d.toLocaleString([], {dateStyle:'medium',timeStyle:'short'})};
 
@@ -109,10 +120,23 @@
     const learning=document.querySelector('#learning');
     const panel=document.createElement('section');panel.className='panel';panel.id='study-notes';panel.dataset.lmsStudyNotesSummary='';
     const entries=Object.entries(read()).filter(([,v])=>v&&String(v.text||'').trim()).sort((a,b)=>new Date(b[1].updatedAt||0)-new Date(a[1].updatedAt||0));
-    const rows=entries.length?entries.map(([id,v])=>{const text=String(v.text||'').replace(/\s+/g,' ').trim(),snippet=text.length>150?text.slice(0,147)+'…':text;return `<div class="lms-item"><div class="lms-item-icon">NOTE</div><div><h3>${esc(courseTitle(id))}</h3><p>${esc(snippet)}</p><small>${v.updatedAt?'Last saved '+formatWhen(v.updatedAt):'Saved locally'}</small></div><a class="btn btn-secondary" href="${courseHref(id)}">Open course</a></div>`}).join(''):'<p class="lms-local-note">No course-specific study notes saved yet. Open the course catalog or a supported course and use “Study note” to record key learning takeaways.</p>';
-    panel.innerHTML=`<h2>Course study notes</h2><p class="lms-local-note">Personal browser-local notes are included in the complete learner backup. Keep notes educational and non-confidential.</p><div class="lms-list">${rows}</div>`;
+    const categories=[...new Set(entries.map(([id])=>courseCategory(id)))].sort();
+    const rows=entries.length?entries.map(([id,v])=>{const text=String(v.text||'').replace(/\s+/g,' ').trim(),snippet=text.length>150?text.slice(0,147)+'…':text,title=courseTitle(id),category=courseCategory(id),search=(title+' '+category+' '+text).toLowerCase();return `<div class="lms-item" data-lms-note-row data-note-category="${esc(category)}" data-note-search="${esc(search)}"><div class="lms-item-icon">NOTE</div><div><h3>${esc(title)}</h3><p>${esc(snippet)}</p><small>${esc(category)} · ${v.updatedAt?'Last saved '+formatWhen(v.updatedAt):'Saved locally'}</small></div><a class="btn btn-secondary" href="${courseHref(id)}">Open course</a></div>`}).join(''):'<p class="lms-local-note">No course-specific study notes saved yet. Open the course catalog or a supported course and use “Study note” to record key learning takeaways.</p>';
+    const categoryOptions=categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    panel.innerHTML=`<h2>Course study notes</h2><p class="lms-local-note">Personal browser-local notes are included in the complete learner backup. Search notes by course, topic or note text, and keep entries educational and non-confidential.</p>${entries.length?`<div class="catalog-tools" style="grid-template-columns:minmax(0,1fr) minmax(180px,240px);margin-bottom:10px"><input type="search" data-lms-note-search aria-label="Search saved study notes" placeholder="Search notes, courses or topics…"><select data-lms-note-category aria-label="Filter study notes by learning area"><option value="">All learning areas</option>${categoryOptions}</select></div><p class="lms-local-note" data-lms-note-results aria-live="polite">${entries.length} saved ${entries.length===1?'note':'notes'}</p>`:''}<div class="lms-list" data-lms-note-list>${rows}</div>${entries.length?'<p class="lms-local-note" data-lms-note-empty hidden>No saved notes match the current search and learning-area filter.</p>':''}`;
     if(learning)learning.insertAdjacentElement('beforebegin',panel);else main.appendChild(panel);
     const nav=document.querySelector('.side-nav');if(nav&&!nav.querySelector('a[href="#study-notes"]')){const a=document.createElement('a');a.href='#study-notes';a.textContent='Study Notes';const learningLink=nav.querySelector('a[href="#learning"]');if(learningLink)learningLink.insertAdjacentElement('beforebegin',a);else nav.appendChild(a)};
+    if(entries.length){
+      const searchInput=panel.querySelector('[data-lms-note-search]'),categorySelect=panel.querySelector('[data-lms-note-category]'),resultText=panel.querySelector('[data-lms-note-results]'),empty=panel.querySelector('[data-lms-note-empty]'),noteRows=[...panel.querySelectorAll('[data-lms-note-row]')];
+      const applyFilters=()=>{
+        const query=String(searchInput.value||'').trim().toLowerCase(),category=categorySelect.value;
+        let shown=0;
+        noteRows.forEach(row=>{const matchesQuery=!query||String(row.dataset.noteSearch||'').includes(query),matchesCategory=!category||row.dataset.noteCategory===category,show=matchesQuery&&matchesCategory;row.hidden=!show;if(show)shown++});
+        resultText.textContent=`${shown} of ${noteRows.length} saved ${noteRows.length===1?'note':'notes'} shown`;
+        empty.hidden=shown!==0;
+      };
+      searchInput.addEventListener('input',applyFilters);categorySelect.addEventListener('change',applyFilters);
+    }
   };
 
   const init=()=>{mountCourseNotes();mountCatalogNotes();mountDashboard()};
