@@ -60,6 +60,16 @@
         select.addEventListener('change',apply);
       }
     }
+    const searchInput=panel.querySelector('[data-lms-note-search]');
+    const categorySelect=panel.querySelector('[data-lms-note-category]');
+    if(searchInput&&!searchInput.dataset.noteReviewBound){
+      searchInput.dataset.noteReviewBound='1';
+      searchInput.addEventListener('input',apply);
+    }
+    if(categorySelect&&!categorySelect.dataset.noteReviewBound){
+      categorySelect.dataset.noteReviewBound='1';
+      categorySelect.addEventListener('change',apply);
+    }
     let summary=panel.querySelector('[data-lms-note-review-summary]');
     if(!summary){
       summary=document.createElement('p');
