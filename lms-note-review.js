@@ -16,6 +16,7 @@
       if(href.startsWith('course.html')) id='industrial-hvac-troubleshooting';
       else if(href.includes('#')) id=decodeURIComponent(href.split('#')[1]||'');
       if(!id||!state[id])return;
+      row.dataset.noteId=id;
       row.dataset.noteReview=state[id].needsReview?'1':'0';
       let button=row.querySelector('[data-lms-note-review-toggle]');
       if(!button){
@@ -56,8 +57,20 @@
         select.setAttribute('aria-label','Filter study notes by revision status');
         select.innerHTML='<option value="">All revision states</option><option value="review">Needs review</option><option value="done">Not marked for review</option>';
         tools.appendChild(select);
-        tools.style.gridTemplateColumns='minmax(0,1fr) repeat(2,minmax(170px,220px))';
         select.addEventListener('change',apply);
+      }
+    }
+    let sort=panel.querySelector('[data-lms-note-sort]');
+    if(!sort){
+      const tools=panel.querySelector('.catalog-tools');
+      if(tools){
+        sort=document.createElement('select');
+        sort.dataset.lmsNoteSort='';
+        sort.setAttribute('aria-label','Sort saved study notes');
+        sort.innerHTML='<option value="newest">Newest saved first</option><option value="oldest">Oldest saved first</option><option value="review">Needs review first</option>';
+        tools.appendChild(sort);
+        tools.style.gridTemplateColumns='minmax(0,1fr) repeat(3,minmax(160px,220px))';
+        sort.addEventListener('change',apply);
       }
     }
     const searchInput=panel.querySelector('[data-lms-note-search]');
@@ -86,13 +99,33 @@
       const search=panel.querySelector('[data-lms-note-search]');
       const category=panel.querySelector('[data-lms-note-category]');
       const review=panel.querySelector('[data-lms-note-review-filter]');
+      const sortControl=panel.querySelector('[data-lms-note-sort]');
       const empty=panel.querySelector('[data-lms-note-empty]');
       const result=panel.querySelector('[data-lms-note-results]');
+      const list=panel.querySelector('[data-lms-note-list]');
       const q=String(search?.value||'').trim().toLowerCase();
       const cat=category?.value||'';
       const rev=review?.value||'';
+      const sortMode=sortControl?.value||'newest';
+      const current=read();
+      const time=(row,key)=>{
+        const value=current[row.dataset.noteId||'']?.[key];
+        const ms=Date.parse(value||'');
+        return Number.isNaN(ms)?0:ms;
+      };
+      const ordered=[...rows].sort((a,b)=>{
+        if(sortMode==='oldest')return time(a,'updatedAt')-time(b,'updatedAt');
+        if(sortMode==='review'){
+          const reviewDelta=(b.dataset.noteReview==='1'?1:0)-(a.dataset.noteReview==='1'?1:0);
+          if(reviewDelta)return reviewDelta;
+          const reviewTime=time(b,'reviewUpdatedAt')-time(a,'reviewUpdatedAt');
+          if(reviewTime)return reviewTime;
+        }
+        return time(b,'updatedAt')-time(a,'updatedAt');
+      });
+      if(list)ordered.forEach(row=>list.appendChild(row));
       let shown=0,marked=0;
-      rows.forEach(row=>{
+      ordered.forEach(row=>{
         const matchQ=!q||String(row.dataset.noteSearch||'').includes(q);
         const matchCat=!cat||row.dataset.noteCategory===cat;
         const isReview=row.dataset.noteReview==='1';
