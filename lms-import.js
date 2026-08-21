@@ -8,6 +8,8 @@
   const MAX_FILE_BYTES=8*1024*1024;
   const MAX_KEYS=100;
   const MAX_VALUE_BYTES=2*1024*1024;
+  const REMINDER_ACTIVITY_THRESHOLD=3;
+  const REMINDER_AGE_DAYS=7;
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
   const announce=(message)=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
@@ -59,6 +61,26 @@
     }
     return (hash>>>0).toString(16).padStart(8,'0');
   };
+  const activityUnits=(value)=>{
+    let count=0;
+    const seen=new Set();
+    const walk=(node)=>{
+      if(!node||typeof node!=='object'||seen.has(node))return;
+      seen.add(node);
+      if(Array.isArray(node)){node.forEach(walk);return}
+      const keys=Object.keys(node);
+      if(keys.some(k=>/^(at|createdAt|completedAt|submittedAt|loggedAt|attemptedAt|updatedAt)$/i.test(k))){count++}
+      keys.forEach(k=>walk(node[k]));
+    };
+    walk(value);
+    return count;
+  };
+  const storageActivityUnits=(storage)=>Object.values(storage).reduce((sum,value)=>sum+activityUnits(value),0);
+  const daysSince=(iso)=>{
+    const d=new Date(iso||'');
+    if(Number.isNaN(d.getTime()))return Infinity;
+    return Math.max(0,(Date.now()-d.getTime())/86400000);
+  };
   const writeBackupMeta=(meta)=>localStorage.setItem(BACKUP_META_KEY,JSON.stringify(meta));
 
   const renderBackupHealth=()=>{
@@ -75,14 +97,20 @@
     }
     const storage=collectStorage();
     const currentHash=fingerprint(storage);
+    const currentUnits=storageActivityUnits(storage);
     const meta=read(BACKUP_META_KEY);
     if(!meta?.hash){
       box.innerHTML='<strong>Backup health:</strong> No complete learner backup has been recorded on this browser yet. Export one now so you have a portable recovery copy.';
       return;
     }
     const current=meta.hash===currentHash;
-    const label=current?'Current':'Update recommended';
-    const detail=current?'Your browser-local LMS record matches the last recorded backup state.':'Your browser-local LMS record has changed since the last recorded backup. Export a fresh copy to preserve the latest progress.';
+    const unitsSince=Math.max(0,currentUnits-Number(meta.activityUnits||0));
+    const ageDays=daysSince(meta.lastBackupAt);
+    const meaningful=unitsSince>=REMINDER_ACTIVITY_THRESHOLD||(!current&&ageDays>=REMINDER_AGE_DAYS);
+    const label=current?'Current':meaningful?'Backup recommended':'Recent changes saved';
+    let detail='Your browser-local LMS record matches the last recorded backup state.';
+    if(!current&&!meaningful)detail=`Your learner record has changed, but only ${unitsSince} new recorded learning action${unitsSince===1?'':'s'} have accumulated. A new backup will be recommended after ${REMINDER_ACTIVITY_THRESHOLD} recorded actions or ${REMINDER_AGE_DAYS} days.`;
+    if(!current&&meaningful)detail=`Your learner record has meaningful changes since the last backup (${unitsSince} new recorded learning action${unitsSince===1?'':'s'}${ageDays>=REMINDER_AGE_DAYS?`, ${Math.floor(ageDays)} days since backup`:''}). Export a fresh copy to preserve the latest progress.`;
     box.innerHTML=`<strong>Backup health: ${label}</strong><br>Last backup state: ${formatWhen(meta.lastBackupAt)} · ${meta.keyCount||Object.keys(storage).length} LMS data sets.<br>${detail}`;
   };
 
@@ -91,6 +119,7 @@
     const storage=collectStorage();
     const exportedAt=new Date().toISOString();
     const stateHash=fingerprint(storage);
+    const activityCount=storageActivityUnits(storage);
     const payload={
       format:FORMAT,
       version:VERSION,
@@ -104,7 +133,7 @@
     a.download=`SEA-complete-learning-backup-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    writeBackupMeta({lastBackupAt:exportedAt,hash:stateHash,keyCount:Object.keys(storage).length,source:'export'});
+    writeBackupMeta({lastBackupAt:exportedAt,hash:stateHash,keyCount:Object.keys(storage).length,activityUnits:activityCount,source:'export'});
     renderBackupHealth();
     announce(`Complete learner backup exported with ${Object.keys(storage).length} LMS data sets.`);
   };
@@ -133,7 +162,7 @@
     if(!confirm(`Restore ${keys.length} SEA LMS data sets from this complete backup? Matching local LMS data will be replaced. Your sign-in/session data is not changed.`))return false;
     const prepared=keys.map(key=>[key,JSON.stringify(payload.storage[key])]);
     prepared.forEach(([key,value])=>localStorage.setItem(key,value));
-    writeBackupMeta({lastBackupAt:payload.exportedAt||new Date().toISOString(),hash:fingerprint(payload.storage),keyCount:keys.length,source:'restore',restoredAt:new Date().toISOString()});
+    writeBackupMeta({lastBackupAt:payload.exportedAt||new Date().toISOString(),hash:fingerprint(payload.storage),keyCount:keys.length,activityUnits:storageActivityUnits(payload.storage),source:'restore',restoredAt:new Date().toISOString()});
     announce('Complete learner backup restored successfully. Reloading dashboard…');
     setTimeout(()=>location.reload(),350);
     return true;
@@ -167,7 +196,7 @@
     if(importBtn)importBtn.textContent='Restore learner backup';
     const panel=exportBtn?.closest('.panel');
     const note=panel?.querySelector('.lms-local-note');
-    if(note)note.innerHTML='<strong>Complete portable backup:</strong> export includes all SEA browser-local LMS data sets, including enrolments, module progress, quiz attempts, practical logbook, goals, role plans, learning-plan history, and study-strategy analytics. The backup-health indicator tells you when your local learning record has changed since the last recorded backup. Restore validates the file and learner email before replacing matching LMS data. Sign-in/session data is never imported. Older core-only SEA backups remain supported.';
+    if(note)note.innerHTML=`<strong>Complete portable backup:</strong> export includes all SEA browser-local LMS data sets, including enrolments, module progress, quiz attempts, practical logbook, goals, role plans, learning-plan history, and study-strategy analytics. The backup-health indicator recommends a fresh export after ${REMINDER_ACTIVITY_THRESHOLD} new recorded learning actions or ${REMINDER_AGE_DAYS} days with unsaved changes, instead of prompting after every small update. Restore validates the file and learner email before replacing matching LMS data. Sign-in/session data is never imported. Older core-only SEA backups remain supported.`;
     renderBackupHealth();
     if(!importBtn||!input)return;
     importBtn.addEventListener('click',()=>input.click());
