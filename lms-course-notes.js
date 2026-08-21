@@ -29,23 +29,64 @@
     const card=document.createElement('div');
     card.className='content-card';
     card.dataset.lmsCourseNotes='';
-    card.innerHTML=`<h2>My study notes</h2><p class="lead">Save concise personal learning notes for this course on this browser. They are included in the complete SEA learner backup.</p><div class="field"><label for="lmsCourseNote">Course note</label><textarea id="lmsCourseNote" maxlength="${MAX}" placeholder="Record key concepts, questions to revisit, calculations to practise, or non-confidential learning takeaways."></textarea></div><div class="lms-toolbar" style="margin-top:12px"><button class="btn btn-primary" type="button" data-lms-note-save>Save note</button><button class="btn btn-secondary" type="button" data-lms-note-clear>Clear note</button></div><p class="lms-local-note" data-lms-note-status>Browser-local only. Do not enter employer-confidential information, passwords, restricted drawings, proprietary settings, personal data, or sensitive operational details.</p>`;
+    card.innerHTML=`<h2>My study notes</h2><p class="lead">Save concise personal learning notes for this course on this browser. They are included in the complete SEA learner backup.</p><div class="field"><label for="lmsCourseNote">Course note</label><textarea id="lmsCourseNote" maxlength="${MAX}" aria-describedby="lmsCourseNoteCount lmsCourseNoteStatus" placeholder="Record key concepts, questions to revisit, calculations to practise, or non-confidential learning takeaways."></textarea><small id="lmsCourseNoteCount" data-lms-note-count aria-live="polite"></small></div><div class="lms-toolbar" style="margin-top:12px"><button class="btn btn-primary" type="button" data-lms-note-save>Save note</button><button class="btn btn-secondary" type="button" data-lms-note-clear>Clear note</button></div><p class="lms-local-note" id="lmsCourseNoteStatus" data-lms-note-status>Browser-local only. Do not enter employer-confidential information, passwords, restricted drawings, proprietary settings, personal data, or sensitive operational details.</p>`;
     if(quiz)quiz.insertAdjacentElement('afterend',card);else host.appendChild(card);
     const area=card.querySelector('textarea');
     const status=card.querySelector('[data-lms-note-status]');
-    area.value=String(saved.text||'').slice(0,MAX);
-    if(saved.updatedAt)status.textContent=`Last saved ${formatWhen(saved.updatedAt)}. Browser-local and included in complete learner backup.`;
-    card.querySelector('[data-lms-note-save]').addEventListener('click',()=>{
+    const count=card.querySelector('[data-lms-note-count]');
+    const saveButton=card.querySelector('[data-lms-note-save]');
+    let savedSnapshot=String(saved.text||'').slice(0,MAX);
+    area.value=savedSnapshot;
+
+    const isDirty=()=>area.value.trim()!==savedSnapshot.trim();
+    const refresh=()=>{
+      count.textContent=`${area.value.length.toLocaleString()} / ${MAX.toLocaleString()} characters`;
+      if(isDirty())status.textContent='Unsaved changes. Save before leaving this page. Browser-local only; keep notes educational and non-confidential.';
+      else if(saved.updatedAt&&savedSnapshot)status.textContent=`Last saved ${formatWhen((read()[id]||{}).updatedAt||saved.updatedAt)}. Browser-local and included in complete learner backup.`;
+      else status.textContent='Browser-local only. Do not enter employer-confidential information, passwords, restricted drawings, proprietary settings, personal data, or sensitive operational details.';
+      saveButton.disabled=!isDirty();
+    };
+
+    const saveNote=()=>{
       const text=area.value.trim().slice(0,MAX);
       const state=read();
-      if(text){state[id]={text,updatedAt:new Date().toISOString()};write(state);status.textContent=`Saved ${formatWhen(state[id].updatedAt)}. Browser-local and included in complete learner backup.`;announce('Course study note saved.');}
-      else{delete state[id];write(state);status.textContent='Empty note removed. Browser-local only.';announce('Empty course note removed.');}
+      if(text){
+        state[id]={text,updatedAt:new Date().toISOString()};
+        write(state);
+        savedSnapshot=text;
+        area.value=text;
+        status.textContent=`Saved ${formatWhen(state[id].updatedAt)}. Browser-local and included in complete learner backup.`;
+        announce('Course study note saved.');
+      }else{
+        delete state[id];
+        write(state);
+        savedSnapshot='';
+        area.value='';
+        status.textContent='Empty note removed. Browser-local only.';
+        announce('Empty course note removed.');
+      }
+      refresh();
+    };
+
+    area.addEventListener('input',refresh);
+    area.addEventListener('keydown',e=>{
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){
+        e.preventDefault();
+        if(isDirty())saveNote();
+      }
     });
+    window.addEventListener('beforeunload',e=>{
+      if(!isDirty())return;
+      e.preventDefault();
+      e.returnValue='';
+    });
+    saveButton.addEventListener('click',saveNote);
     card.querySelector('[data-lms-note-clear]').addEventListener('click',()=>{
       if(!area.value&&!read()[id])return;
       if(!confirm('Clear this browser-local course note?'))return;
-      const state=read();delete state[id];write(state);area.value='';status.textContent='Course note cleared.';announce('Course study note cleared.');
+      const state=read();delete state[id];write(state);savedSnapshot='';area.value='';status.textContent='Course note cleared.';refresh();announce('Course study note cleared.');
     });
+    refresh();
   };
 
   const mountDashboard=()=>{
