@@ -60,7 +60,7 @@
     };
     const saveNote=()=>{
       const text=area.value.trim().slice(0,MAX),state=read();
-      if(text){state[id]={text,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;area.value=text;announce('Course study note saved.');}
+      if(text){state[id]={...(state[id]||{}),text,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;area.value=text;announce('Course study note saved.');}
       else{delete state[id];write(state);savedSnapshot='';area.value='';announce('Empty course note removed.');}
       refresh();
     };
@@ -99,7 +99,7 @@
       setTimeout(()=>area.focus(),0);
     };
     const close=()=>{if(dirty()&&!confirm('Close without saving your changes?'))return;if(typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open')};
-    const saveNote=()=>{if(!currentId)return;const state=read(),text=area.value.trim().slice(0,MAX);if(text){state[currentId]={text,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;area.value=text;announce('Course study note saved.');}else{delete state[currentId];write(state);savedSnapshot='';area.value='';announce('Empty course note removed.');}refresh();};
+    const saveNote=()=>{if(!currentId)return;const state=read(),text=area.value.trim().slice(0,MAX);if(text){state[currentId]={...(state[currentId]||{}),text,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;area.value=text;announce('Course study note saved.');}else{delete state[currentId];write(state);savedSnapshot='';area.value='';announce('Empty course note removed.');}refresh();};
     area.addEventListener('input',refresh);
     area.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(dirty())saveNote()}});
     dialog.addEventListener('cancel',e=>{e.preventDefault();close()});
