@@ -26,11 +26,23 @@
         button.dataset.lmsNoteReviewToggle='';
         link.insertAdjacentElement('beforebegin',button);
       }
-      const updateButton=()=>{
-        const on=!!read()[id]?.needsReview;
+      let reviewedButton=row.querySelector('[data-lms-note-reviewed-today]');
+      if(!reviewedButton){
+        reviewedButton=document.createElement('button');
+        reviewedButton.type='button';
+        reviewedButton.className='btn btn-secondary';
+        reviewedButton.dataset.lmsNoteReviewedToday='';
+        reviewedButton.textContent='Reviewed today';
+        reviewedButton.setAttribute('aria-label','Mark this study note as reviewed today');
+        link.insertAdjacentElement('beforebegin',reviewedButton);
+      }
+      const updateButtons=()=>{
+        const note=read()[id]||{};
+        const on=!!note.needsReview;
         button.textContent=on?'Review ✓':'Needs review';
         button.setAttribute('aria-pressed',String(on));
         button.setAttribute('aria-label',(on?'Remove review marker from ':'Mark for review: ')+(row.querySelector('h3')?.textContent||'study note'));
+        reviewedButton.hidden=!on;
         row.dataset.noteReview=on?'1':'0';
       };
       if(!button.dataset.bound){
@@ -41,12 +53,27 @@
           current[id].needsReview=!current[id].needsReview;
           current[id].reviewUpdatedAt=new Date().toISOString();
           write(current);
-          updateButton();
+          updateButtons();
           apply();
           announce(current[id].needsReview?'Study note added to revision queue.':'Study note removed from revision queue.');
         });
       }
-      updateButton();
+      if(!reviewedButton.dataset.bound){
+        reviewedButton.dataset.bound='1';
+        reviewedButton.addEventListener('click',()=>{
+          const current=read();
+          if(!current[id])return;
+          const now=new Date().toISOString();
+          current[id].needsReview=false;
+          current[id].reviewedAt=now;
+          current[id].reviewUpdatedAt=now;
+          write(current);
+          updateButtons();
+          apply();
+          announce('Study note marked reviewed today and removed from the revision queue.');
+        });
+      }
+      updateButtons();
     });
     let select=panel.querySelector('[data-lms-note-review-filter]');
     if(!select){
