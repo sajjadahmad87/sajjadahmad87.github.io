@@ -4,15 +4,28 @@
   if(!root||!nav)return;
 
   const links=()=>[...nav.querySelectorAll('a[href^="#"]')];
+  const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   let observer=null;
+  let activeId='';
 
-  const setActive=(id)=>{
+  const setActive=(id,{updateHash=true}={})=>{
+    if(!id)return;
+    activeId=id;
+    let activeLink=null;
     links().forEach(link=>{
       const active=link.getAttribute('href')==='#'+id;
       link.classList.toggle('active',active);
-      if(active)link.setAttribute('aria-current','location');
-      else link.removeAttribute('aria-current');
+      if(active){
+        link.setAttribute('aria-current','location');
+        activeLink=link;
+      }else link.removeAttribute('aria-current');
     });
+    if(activeLink){
+      activeLink.scrollIntoView({block:'nearest',inline:'nearest',behavior:reduceMotion?'auto':'smooth'});
+    }
+    if(updateHash&&history.replaceState&&location.hash!=='#'+id){
+      history.replaceState(null,'','#'+encodeURIComponent(id));
+    }
   };
 
   const observeSections=()=>{
@@ -26,7 +39,7 @@
       });
       if(!visible.size)return;
       const current=[...visible.entries()].sort((a,b)=>Math.abs(a[1])-Math.abs(b[1]))[0]?.[0];
-      if(current)setActive(current);
+      if(current&&current!==activeId)setActive(current);
     },{rootMargin:'-18% 0px -68% 0px',threshold:[0,0.01]});
 
     links().forEach(link=>{
@@ -40,11 +53,16 @@
     const link=event.target.closest('a[href^="#"]');
     if(!link)return;
     const id=decodeURIComponent((link.getAttribute('href')||'').slice(1));
-    if(id)setActive(id);
+    if(id)setActive(id,{updateHash:false});
   });
 
-  const initial=(location.hash||'#overview').slice(1);
-  if(document.getElementById(initial))setActive(initial);
+  window.addEventListener('hashchange',()=>{
+    const id=decodeURIComponent((location.hash||'#overview').slice(1));
+    if(document.getElementById(id))setActive(id,{updateHash:false});
+  });
+
+  const initial=decodeURIComponent((location.hash||'#overview').slice(1));
+  if(document.getElementById(initial))setActive(initial,{updateHash:false});
   observeSections();
 
   const mutationObserver=new MutationObserver(()=>{
