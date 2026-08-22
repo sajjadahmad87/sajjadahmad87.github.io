@@ -95,7 +95,7 @@
     if(start){const skill=SKILLS.find(s=>s.id===start.dataset.strategyStart);if(!skill)return;const method=document.getElementById('strategyMethod')?.value||'secondary';if(startExperiment(skill,method)){history.replaceState(null,'',location.pathname+location.hash);render();}return;}
     if(e.target.closest('[data-strategy-cancel]')){const x=state();x.active=null;save(x);render();}
   });
-  document.addEventListener('DOMContentLoaded',render);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
   window.addEventListener('storage',render);
   document.addEventListener('submit',e=>{if(e.target.closest('form[data-lms-quiz]'))setTimeout(render,0)});
 })();
