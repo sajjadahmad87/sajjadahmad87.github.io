@@ -189,8 +189,28 @@
     script.src=module.src;
     script.async=true;
     script.dataset.lmsLazyModule=module.id;
-    script.addEventListener('load',()=>section.removeAttribute('aria-busy'),{once:true});
-    script.addEventListener('error',()=>{section.removeAttribute('aria-busy');loadedModules.delete(module.src);},{once:true});
+    script.addEventListener('load',()=>{
+      section.removeAttribute('aria-busy');
+      section.querySelector('[data-lms-load-error]')?.remove();
+    },{once:true});
+    script.addEventListener('error',()=>{
+      section.removeAttribute('aria-busy');
+      loadedModules.delete(module.src);
+      script.remove();
+      if(section.querySelector('[data-lms-load-error]'))return;
+      const notice=document.createElement('div');
+      notice.className='lms-local-note';
+      notice.dataset.lmsLoadError='';
+      notice.setAttribute('role','status');
+      notice.textContent='This dashboard section could not load. ';
+      const retry=document.createElement('button');
+      retry.type='button';
+      retry.className='btn btn-secondary';
+      retry.textContent='Retry section';
+      retry.addEventListener('click',()=>{notice.remove();loadDashboardModule(module);});
+      notice.appendChild(retry);
+      section.appendChild(notice);
+    },{once:true});
     document.body.appendChild(script);
   };
 
