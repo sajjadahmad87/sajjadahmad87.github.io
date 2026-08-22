@@ -91,7 +91,8 @@
     loadScript('/lms-strategy-insights.js');
   };
 
-  document.addEventListener('DOMContentLoaded',()=>{render();mountStrategyTracker();});
+  const init=()=>{render();mountStrategyTracker();};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
   window.addEventListener('storage',render);
   document.addEventListener('submit',e=>{if(e.target.closest('form[data-lms-quiz]'))setTimeout(render,0)});
   document.addEventListener('click',e=>{if(e.target.closest('[data-role-plan-refresh]'))setTimeout(render,0)});

@@ -62,7 +62,7 @@
       <p class="lms-local-note">These trends summarize browser-local self-assessment and study-plan history. They are not competency certification, employer performance evidence, promotion criteria, or authorization to perform technical work.</p>`;
   };
 
-  document.addEventListener('DOMContentLoaded',render);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
   window.addEventListener('storage',render);
   document.addEventListener('click',e=>{if(e.target.closest('[data-role-plan-refresh]'))setTimeout(render,0)});
   document.addEventListener('submit',e=>{if(e.target.closest('form[data-lms-quiz]'))setTimeout(render,0)});

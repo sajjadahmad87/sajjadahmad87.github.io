@@ -173,9 +173,57 @@
     panel.innerHTML=`<div class="label">${esc(action.eyebrow)}</div><h2 id="next-best-action-title" style="margin:8px 0 6px">Next best learning action</h2><div class="lms-item"><div class="lms-item-icon">NEXT</div><div><h3>${esc(action.title)}</h3><p>${esc(action.detail)}</p></div><a class="btn btn-primary" href="${esc(action.href)}">${esc(action.label)}</a></div><p class="lms-local-note">This recommendation is generated only from learning activity stored on this browser. It is a study aid, not a competency, certification or assessment decision.</p>`;
   };
 
+  const lazyModules=[
+    {id:'weekly-trends',src:'/lms-weekly-trends.js'},
+    {id:'development-attention',src:'/lms-development-attention.js'}
+  ];
+  const loadedModules=new Set();
+
+  const loadDashboardModule=module=>{
+    if(loadedModules.has(module.src)||document.querySelector(`script[src="${module.src}"]`))return;
+    const section=document.getElementById(module.id);
+    if(!section)return;
+    loadedModules.add(module.src);
+    section.setAttribute('aria-busy','true');
+    const script=document.createElement('script');
+    script.src=module.src;
+    script.async=true;
+    script.dataset.lmsLazyModule=module.id;
+    script.addEventListener('load',()=>section.removeAttribute('aria-busy'),{once:true});
+    script.addEventListener('error',()=>{section.removeAttribute('aria-busy');loadedModules.delete(module.src);},{once:true});
+    document.body.appendChild(script);
+  };
+
+  const setupLazyModules=()=>{
+    const loadHashTarget=()=>{
+      const id=decodeURIComponent((location.hash||'').slice(1));
+      const module=lazyModules.find(item=>item.id===id);
+      if(module)loadDashboardModule(module);
+    };
+    loadHashTarget();
+    window.addEventListener('hashchange',loadHashTarget);
+    if(!('IntersectionObserver' in window)){
+      lazyModules.forEach(loadDashboardModule);
+      return;
+    }
+    const lazyObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting)return;
+        const module=lazyModules.find(item=>item.id===entry.target.id);
+        if(module)loadDashboardModule(module);
+        lazyObserver.unobserve(entry.target);
+      });
+    },{rootMargin:'800px 0px',threshold:0.01});
+    lazyModules.forEach(module=>{
+      const section=document.getElementById(module.id);
+      if(section)lazyObserver.observe(section);
+    });
+  };
+
   const enhanceDashboard=()=>{
     enhanceResumeTarget();
     renderNextBestAction();
+    setupLazyModules();
   };
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhanceDashboard,{once:true});
