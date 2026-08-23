@@ -206,6 +206,8 @@
     panel.innerHTML=`<div class="label">${esc(action.eyebrow)}</div><h2 id="next-best-action-title" style="margin:8px 0 6px">Next best learning action</h2><div class="lms-item"><div class="lms-item-icon">NEXT</div><div><h3>${esc(action.title)}</h3><p>${esc(action.detail)}</p></div><a class="btn btn-primary" href="${esc(action.href)}">${esc(action.label)}</a></div><p class="lms-local-note">This recommendation is generated only from learning activity stored on this browser. It is a study aid, not a competency, certification or assessment decision.</p>`;
   };
 
+  document.addEventListener('sea:study-notes-updated',renderNextBestAction);
+
   const lazyModules=[
     {id:'weekly-trends',src:'/lms-weekly-trends.js'},
     {id:'development-attention',src:'/lms-development-attention.js'}
