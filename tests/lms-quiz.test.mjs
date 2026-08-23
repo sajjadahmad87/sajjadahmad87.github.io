@@ -61,7 +61,7 @@ for (const quiz of quizzes) {
     const strong = resultMarkup(QUESTIONS.length);
     const review = resultMarkup(2);
 
-    assert.match(strong, new RegExp('Score: ' + QUESTIONS.length + '/' + QUESTIONS.length + ' \\(100%\\\\)\\.'));
+    assert.ok(strong.includes('Score: ' + QUESTIONS.length + '/' + QUESTIONS.length + ' (100%).'));
     assert.match(review, /Score: 2\/5 \(40%\)\./);
     assert.match(review, /aria-label="Recommended [^"]+ review resources"/);
     for (const href of quiz.links) {
