@@ -12,6 +12,8 @@
   const getEntries=()=>{const x=read(LOG_KEY,[]);return Array.isArray(x)?x:[]};
   const saveEntries=(entries)=>write(LOG_KEY,entries.slice(0,MAX_ENTRIES));
   const announce=(message)=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
+  const focusElement=(element)=>{if(!element)return;requestAnimationFrame(()=>{try{element.focus({preventScroll:true})}catch{element.focus()}})};
+  const focusDelete=(id)=>focusElement([...document.querySelectorAll('[data-log-delete]')].find(button=>button.dataset.logDelete===id));
   const addActivity=(label)=>{
     const state=read(LMS_KEY,{enrolled:{},saved:[],progress:{},activity:[]});
     state.activity=Array.isArray(state.activity)?state.activity:[];
@@ -34,6 +36,12 @@
     <div class="lms-logbook-grid"><form class="lms-log-form" data-log-form><div class="lms-log-fields"><label>Learning topic<select name="topic" required>${topicOptions}</select></label><label>Activity type<select name="activity" required>${activityOptions}</select></label><label class="lms-log-full">Entry title<input name="title" maxlength="90" required placeholder="Example: Investigated AHU low-airflow symptom"></label><label class="lms-log-full">Asset / system (optional)<input name="system" maxlength="80" placeholder="Use a generic description; avoid confidential asset identifiers"></label><label class="lms-log-full">Evidence / observations<textarea name="evidence" maxlength="1200" rows="4" placeholder="Record measurements, symptoms, checks or observations. Do not include passwords, personal data, confidential drawings or restricted company information."></textarea></label><label class="lms-log-full">What did you learn?<textarea name="learning" maxlength="1000" rows="3" placeholder="Summarize the engineering lesson, reasoning or principle you learned."></textarea></label><label class="lms-log-full">Next learning action (optional)<textarea name="nextAction" maxlength="600" rows="2" placeholder="Example: Review VFD guide and verify fan rotation/command logic next time."></textarea></label></div><div class="lms-log-actions"><button class="btn btn-primary" type="submit">Save logbook entry</button><button class="btn btn-secondary" type="button" data-log-export-json>Export JSON</button><button class="btn btn-secondary" type="button" data-log-export-csv>Export CSV</button></div><p class="lms-local-note"><strong>Privacy:</strong> this is a personal browser-local learning log. Do not record confidential employer information, personal data, passwords, restricted drawings, proprietary settings or safety-sensitive details. Logbook entries are educational reflections only and are not formal competency evidence or authorization to perform work.</p></form><div><h3 class="lms-log-recent-title">Recent entries</h3><div class="lms-log-list">${rows}</div></div></div>`;
   };
 
+  document.addEventListener('invalid',e=>{
+    const field=e.target.closest('[data-log-form] [required]');if(!field)return;
+    const names={topic:'learning topic',activity:'activity type',title:'entry title'};
+    announce('Please complete the required '+(names[field.name]||'logbook field'));
+  },true);
+
   document.addEventListener('submit',e=>{
     const form=e.target.closest('[data-log-form]');if(!form)return;
     e.preventDefault();
@@ -53,6 +61,7 @@
     const entries=getEntries();entries.unshift(entry);saveEntries(entries);
     addActivity('Added practical learning log: '+entry.title);
     render();announce('Practical learning logbook entry saved on this browser');
+    focusElement(document.querySelector('[data-log-form] [name="title"]'));
   });
 
   document.addEventListener('click',e=>{
@@ -61,9 +70,13 @@
       const id=del.dataset.logDelete;
       const entries=getEntries();const found=entries.find(x=>x.id===id);
       if(found&&confirm('Delete this browser-local logbook entry?')){
-        saveEntries(entries.filter(x=>x.id!==id));
+        const index=entries.findIndex(x=>x.id===id);
+        const remaining=entries.filter(x=>x.id!==id);
+        const nextEntry=remaining[Math.min(index,remaining.length-1)];
+        saveEntries(remaining);
         addActivity('Deleted practical learning log: '+found.title);
         render();announce('Logbook entry deleted');
+        if(nextEntry)focusDelete(nextEntry.id);else focusElement(document.querySelector('[data-log-form] [name="title"]'));
       }
       return;
     }
