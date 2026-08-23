@@ -1,6 +1,8 @@
 (()=>{
   const QUIZ_KEY='sea_lms_quiz_rca_v1';
   const LMS_KEY='sea_lms_state_v1';
+  const ACCOUNT_KEY='sea_account_v2';
+  const SESSION_KEY='sea_session_v2';
   const COURSE_ID='root-cause-analysis';
   const QUESTIONS=[
     {q:'Which problem statement gives the strongest starting point for an RCA?',a:['Machine breakdown happened again','Motor overload trip occurred at 14:20 during normal production after current rose above the overload setting','Technician failed to maintain the machine','Bearing problem'],c:1,e:'A useful problem statement is specific about what happened, where/when it happened, operating context and observable consequence without assigning an unverified cause.'},
@@ -13,6 +15,8 @@
   const resultMarkup=score=>{const pct=Math.round(score/QUESTIONS.length*100);return `<p><strong>Score: ${score}/${QUESTIONS.length} (${pct}%).</strong> ${pct>=80?'Strong result. Review any missed explanation before moving on.':'Review the explanations, use the resources below, and retry when ready.'}</p><nav class="lms-quiz-actions" aria-label="Recommended RCA review resources"><span>Next study:</span><a class="btn btn-secondary" href="/guides/root-cause-analysis-5-why/">RCA and 5-Why guide</a><a class="btn btn-secondary" href="/guides/fmea-maintenance/">Maintenance FMEA guide</a></nav>`};
   const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
   const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const signedIn=()=>{const a=read(ACCOUNT_KEY),s=read(SESSION_KEY);return !!(a&&s&&a.email&&a.email===s.email)};
+  const login=()=>{location.href='/signin.html?return='+encodeURIComponent(location.pathname+location.search+location.hash)};
   const quizState=()=>{const x=read(QUIZ_KEY)||{attempts:[]};x.attempts=Array.isArray(x.attempts)?x.attempts:[];return x};
   const bestScore=()=>{const a=quizState().attempts;return a.length?Math.max(...a.map(x=>Number(x.score)||0)):null};
   const addActivity=score=>{const s=read(LMS_KEY)||{enrolled:{},saved:[],progress:{},activity:[]};s.activity=Array.isArray(s.activity)?s.activity:[];s.activity.unshift({type:'quiz-attempt',courseId:COURSE_ID,label:`RCA knowledge check: ${score}/${QUESTIONS.length}`,at:new Date().toISOString()});s.activity=s.activity.slice(0,40);s.updatedAt=new Date().toISOString();write(LMS_KEY,s)};
@@ -27,7 +31,7 @@
     renderSummary();
     const form=root.querySelector('[data-lms-rca-quiz-form]');
     form.addEventListener('submit',e=>{
-      e.preventDefault();const fd=new FormData(form);let answered=0;const answers=[];
+      e.preventDefault();if(!signedIn())return login();const fd=new FormData(form);let answered=0;const answers=[];
       QUESTIONS.forEach((x,i)=>{const raw=fd.get('q'+i),box=form.querySelector(`[data-rca-feedback="${i}"]`);if(raw!==null){answered++;answers[i]=raw;const ok=Number(raw)===x.c;box.hidden=false;box.className='lms-quiz-feedback '+(ok?'ok':'needs-review');box.textContent=(ok?'Correct. ':'Review: ')+x.e}else{box.hidden=false;box.className='lms-quiz-feedback needs-review';box.textContent='Select an answer before submitting. '+x.e}});
       const score=scoreAnswers(answers);const result=form.querySelector('[data-lms-rca-result]');if(answered<QUESTIONS.length){result.hidden=false;result.textContent=`You answered ${answered} of ${QUESTIONS.length} questions. Complete all questions to save an attempt.`;const firstUnanswered=QUESTIONS.findIndex((_,i)=>fd.get('q'+i)===null);const firstInput=firstUnanswered>=0?form.querySelector(`input[name="q${firstUnanswered}"]`):null;if(firstInput)firstInput.focus();return}
       const state=quizState();state.attempts.unshift({courseId:COURSE_ID,score,total:QUESTIONS.length,at:new Date().toISOString()});state.attempts=state.attempts.slice(0,20);write(QUIZ_KEY,state);addActivity(score);renderSummary();result.hidden=false;result.innerHTML=resultMarkup(score);result.focus();
