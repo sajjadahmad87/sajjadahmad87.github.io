@@ -1,6 +1,8 @@
 (()=>{
   const QUIZ_KEY='sea_lms_quiz_electrical_v1';
   const LMS_KEY='sea_lms_state_v1';
+  const ACCOUNT_KEY='sea_account_v2';
+  const SESSION_KEY='sea_session_v2';
   const COURSE_ID='electrical-troubleshooting';
   const QUESTIONS=[
     {q:'Before investigating an electrical fault inside equipment, what is the safest starting principle?',a:['Open the panel and look for loose wires first','Follow approved isolation/LOTO and verify the required safe state before contact or intrusive testing','Reset protection repeatedly until the fault clears','Measure resistance on an energized circuit'],c:1,e:'The troubleshooting method must begin with the approved site electrical-safety process. Isolation, verification, PTW/LOTO and competent-person controls take priority over fault-finding speed.'},
@@ -13,6 +15,8 @@
   const resultMarkup=score=>{const pct=Math.round(score/QUESTIONS.length*100);return `<p><strong>Score: ${score}/${QUESTIONS.length} (${pct}%).</strong> ${pct>=80?'Strong result. Review any missed explanation and keep using safe, evidence-based troubleshooting discipline.':'Review the explanations, use the resources below, and retry when ready.'}</p><nav class="lms-quiz-actions" aria-label="Recommended electrical review resources"><span>Next study:</span><a class="btn btn-secondary" href="/tools/three-phase-power-calculator/">Three-phase power tool</a><a class="btn btn-secondary" href="/guides/vfd-fundamentals/">VFD fundamentals guide</a></nav>`};
   const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
   const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const signedIn=()=>{const a=read(ACCOUNT_KEY),s=read(SESSION_KEY);return !!(a&&s&&a.email&&a.email===s.email)};
+  const login=()=>{location.href='/signin.html?return='+encodeURIComponent(location.pathname+location.search+location.hash)};
   const quizState=()=>{const x=read(QUIZ_KEY)||{attempts:[]};x.attempts=Array.isArray(x.attempts)?x.attempts:[];return x};
   const bestScore=()=>{const a=quizState().attempts;return a.length?Math.max(...a.map(x=>Number(x.score)||0)):null};
   const addActivity=score=>{const s=read(LMS_KEY)||{enrolled:{},saved:[],progress:{},activity:[]};s.activity=Array.isArray(s.activity)?s.activity:[];s.activity.unshift({type:'quiz-attempt',courseId:COURSE_ID,label:`Electrical troubleshooting knowledge check: ${score}/${QUESTIONS.length}`,at:new Date().toISOString()});s.activity=s.activity.slice(0,40);s.updatedAt=new Date().toISOString();write(LMS_KEY,s)};
@@ -23,7 +27,7 @@
     renderSummary();
     const form=root.querySelector('[data-lms-electrical-quiz-form]');
     form.addEventListener('submit',e=>{
-      e.preventDefault();const fd=new FormData(form);let answered=0;const answers=[];
+      e.preventDefault();if(!signedIn())return login();const fd=new FormData(form);let answered=0;const answers=[];
       QUESTIONS.forEach((x,i)=>{const raw=fd.get('q'+i),box=form.querySelector(`[data-electrical-feedback="${i}"]`);if(raw!==null){answered++;answers[i]=raw;const ok=Number(raw)===x.c;box.hidden=false;box.className='lms-quiz-feedback '+(ok?'ok':'needs-review');box.textContent=(ok?'Correct. ':'Review: ')+x.e}else{box.hidden=false;box.className='lms-quiz-feedback needs-review';box.textContent='Select an answer before submitting. '+x.e}});
       const score=scoreAnswers(answers);const result=form.querySelector('[data-lms-electrical-result]');if(answered<QUESTIONS.length){result.hidden=false;result.textContent=`You answered ${answered} of ${QUESTIONS.length} questions. Complete all questions to save an attempt.`;const firstUnanswered=QUESTIONS.findIndex((_,i)=>fd.get('q'+i)===null);const firstInput=firstUnanswered>=0?form.querySelector(`input[name="q${firstUnanswered}"]`):null;if(firstInput)firstInput.focus();return}
       const state=quizState();state.attempts.unshift({courseId:COURSE_ID,score,total:QUESTIONS.length,at:new Date().toISOString()});state.attempts=state.attempts.slice(0,20);write(QUIZ_KEY,state);addActivity(score);renderSummary();result.hidden=false;result.innerHTML=resultMarkup(score);result.focus();
