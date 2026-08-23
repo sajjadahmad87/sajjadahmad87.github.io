@@ -3,6 +3,13 @@
   const MAX=4000;
   const read=()=>{try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch{return {}}};
   const write=x=>localStorage.setItem(KEY,JSON.stringify(x));
+  const markReviewed=id=>{
+    const state=read(),note=state[id];
+    if(!note)return false;
+    state[id]={...note,needsReview:false,reviewedAt:new Date().toISOString()};
+    write(state);
+    return true;
+  };
   const announce=message=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
   const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const courseTitle=id=>({
@@ -132,10 +139,8 @@
     panel.addEventListener('click',event=>{
       const button=event.target.closest('[data-lms-note-reviewed]');
       if(!button)return;
-      const id=button.dataset.noteId,state=read(),note=state[id];
-      if(!note)return;
-      state[id]={...note,needsReview:false,reviewedAt:new Date().toISOString()};
-      write(state);
+      const id=button.dataset.noteId;
+      if(!markReviewed(id))return;
       const row=button.closest('[data-lms-note-row]'),reviewStatus=row?.querySelector('[data-lms-note-review-status]');
       if(reviewStatus)reviewStatus.textContent=' · Reviewed';
       button.remove();
