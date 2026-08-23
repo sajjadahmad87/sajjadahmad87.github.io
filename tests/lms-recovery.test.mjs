@@ -33,7 +33,7 @@ async function loadRecovery({ initial = {}, failKey = '', confirmResult = true }
   let source = await readFile(sourcePath, 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_RECOVERY_TEST__={validateComplete,restoreComplete};\n})();\n'
+    '\n;globalThis.__SEA_RECOVERY_TEST__={collectStorage,validateComplete,restoreComplete};\n})();\n'
   );
   assert.match(source, /__SEA_RECOVERY_TEST__/, 'test hook injection failed');
 
@@ -124,4 +124,34 @@ test('blocks a backup belonging to another signed-in learner', async () => {
   assert.equal(harness.restoreComplete(payload, harness.validateComplete(payload)), false);
   assert.equal(harness.confirms, 0);
   assert.match(harness.live.textContent, /different learner account/i);
+});
+
+
+test('complete backup round-trip preserves every quiz attempt store', async () => {
+  const quizRecords = {
+    sea_lms_quiz_v1: { attempts: [{ courseId: 'industrial-hvac-troubleshooting', score: 4, total: 5, at: '2026-08-23T18:00:00.000Z' }] },
+    sea_lms_quiz_rca_v1: { attempts: [{ courseId: 'root-cause-analysis', score: 5, total: 5, at: '2026-08-23T18:05:00.000Z' }] },
+    sea_lms_quiz_ppm_v1: { attempts: [{ courseId: 'preventive-maintenance-ppm', score: 3, total: 5, at: '2026-08-23T18:10:00.000Z' }] },
+    sea_lms_quiz_electrical_v1: { attempts: [{ courseId: 'electrical-troubleshooting', score: 4, total: 5, at: '2026-08-23T18:15:00.000Z' }] }
+  };
+  const initial = Object.fromEntries(Object.entries(quizRecords).map(([key, value]) => [key, JSON.stringify(value)]));
+  initial.sea_account_v2 = JSON.stringify({ email: 'learner@example.com' });
+  initial.sea_session_v2 = JSON.stringify({ email: 'learner@example.com' });
+
+  const exporter = await loadRecovery({ initial });
+  const collected = JSON.parse(JSON.stringify(exporter.collectStorage()));
+  assert.deepEqual(Object.keys(collected).sort(), Object.keys(quizRecords).sort());
+  assert.equal(Object.hasOwn(collected, 'sea_account_v2'), false);
+  assert.equal(Object.hasOwn(collected, 'sea_session_v2'), false);
+
+  const payload = completeBackup(collected, { email: 'learner@example.com' });
+  const restorer = await loadRecovery({
+    initial: { sea_account_v2: JSON.stringify({ email: 'learner@example.com' }) }
+  });
+  const keys = restorer.validateComplete(payload);
+
+  assert.equal(restorer.restoreComplete(payload, keys), true);
+  for (const [key, value] of Object.entries(quizRecords)) {
+    assert.deepEqual(JSON.parse(restorer.localStorage.getItem(key)), value);
+  }
 });
