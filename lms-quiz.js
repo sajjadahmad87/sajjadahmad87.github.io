@@ -11,6 +11,8 @@
     {q:'When checking a fan driven by a VFD, which statement is most appropriate?',a:['Drive output frequency alone proves airflow is correct','Electrical isolation and OEM/site procedures still take priority before intrusive checks','The VFD can always be bypassed for testing','Motor current should always equal nameplate current'],c:1,e:'VFD systems contain hazardous electrical energy. Approved isolation, LOTO/PTW and OEM/site procedures remain mandatory.'},
     {q:'Which conclusion is safest when water-side temperature performance is poor?',a:['A single temperature reading proves the root cause','Replace the pump immediately','Validate flow, valve position, sensor accuracy, load and operating conditions before assigning cause','Disable controls to stabilize the system'],c:2,e:'Water-side performance depends on several interacting variables, so the diagnosis should be based on validated measurements and operating context.'}
   ];
+  const scoreAnswers=answers=>QUESTIONS.reduce((score,x,i)=>score+(answers[i]!==null&&answers[i]!==undefined&&Number(answers[i])===x.c?1:0),0);
+  const resultMarkup=score=>{const pct=Math.round(score/QUESTIONS.length*100);return `<p><strong>Score: ${score}/${QUESTIONS.length} (${pct}%).</strong> ${pct>=80?'Strong result. Review any missed explanations before continuing.':'Review the explanations, use the resources below, and try again when ready.'}</p><nav class="lms-quiz-actions" aria-label="Recommended HVAC review resources"><span>Next study:</span><a class="btn btn-secondary" href="/guides/ahu-troubleshooting/">AHU troubleshooting guide</a><a class="btn btn-secondary" href="/guides/vfd-fundamentals/">VFD fundamentals guide</a></nav>`};
   const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
   const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
   const signedIn=()=>{const a=read(ACCOUNT_KEY),s=read(SESSION_KEY);return !!(a&&s&&a.email&&a.email===s.email)};
@@ -30,14 +32,14 @@
     form.addEventListener('submit',e=>{
       e.preventDefault();
       if(!signedIn())return login();
-      const fd=new FormData(form);let score=0,answered=0;
+      const fd=new FormData(form);let answered=0;const answers=[];
       QUESTIONS.forEach((x,i)=>{
-        const raw=fd.get('q'+i),box=form.querySelector(`[data-feedback="${i}"]`);if(raw!==null){answered++;const n=Number(raw),ok=n===x.c;if(ok)score++;box.hidden=false;box.className='lms-quiz-feedback '+(ok?'ok':'needs-review');box.textContent=(ok?'Correct. ':'Review: ')+x.e}else{box.hidden=false;box.className='lms-quiz-feedback needs-review';box.textContent='Select an answer before submitting. '+x.e}
+        const raw=fd.get('q'+i),box=form.querySelector(`[data-feedback="${i}"]`);if(raw!==null){answered++;answers[i]=raw;const n=Number(raw),ok=n===x.c;box.hidden=false;box.className='lms-quiz-feedback '+(ok?'ok':'needs-review');box.textContent=(ok?'Correct. ':'Review: ')+x.e}else{box.hidden=false;box.className='lms-quiz-feedback needs-review';box.textContent='Select an answer before submitting. '+x.e}
       });
-      const result=form.querySelector('[data-lms-quiz-result]');
+      const score=scoreAnswers(answers);const result=form.querySelector('[data-lms-quiz-result]');
       if(answered<QUESTIONS.length){result.hidden=false;result.textContent=`You answered ${answered} of ${QUESTIONS.length} questions. Complete all questions to save an attempt.`;const firstUnanswered=QUESTIONS.findIndex((_,i)=>fd.get('q'+i)===null);const firstInput=firstUnanswered>=0?form.querySelector(`input[name="q${firstUnanswered}"]`):null;if(firstInput)firstInput.focus();return}
       const state=quizState();state.attempts.unshift({courseId:COURSE_ID,score,total:QUESTIONS.length,at:new Date().toISOString()});state.attempts=state.attempts.slice(0,20);write(QUIZ_KEY,state);addActivity(score);renderSummary();
-      const pct=Math.round(score/QUESTIONS.length*100);result.hidden=false;result.innerHTML=`<p><strong>Score: ${score}/${QUESTIONS.length} (${pct}%).</strong> ${pct>=80?'Strong result. Review any missed explanations before continuing.':'Review the explanations, use the resources below, and try again when ready.'}</p><nav class="lms-quiz-actions" aria-label="Recommended HVAC review resources"><span>Next study:</span><a class="btn btn-secondary" href="/guides/ahu-troubleshooting/">AHU troubleshooting guide</a><a class="btn btn-secondary" href="/guides/vfd-fundamentals/">VFD fundamentals guide</a></nav>`;result.focus();
+      result.hidden=false;result.innerHTML=resultMarkup(score);result.focus();
     });
     form.addEventListener('reset',()=>setTimeout(()=>{form.querySelectorAll('.lms-quiz-feedback').forEach(x=>{x.hidden=true;x.textContent=''});const r=form.querySelector('[data-lms-quiz-result]');r.hidden=true;r.textContent=''},0));
   };
