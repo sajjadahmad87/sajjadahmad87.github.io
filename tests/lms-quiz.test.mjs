@@ -26,17 +26,20 @@ const quizzes = [
   }
 ];
 
-const loadQuiz = async file => {
+const loadQuiz = async (file, storage = {}) => {
   const source = await readFile(new URL('../' + file, import.meta.url), 'utf8');
   const instrumented = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_QUIZ_TEST__={QUESTIONS,scoreAnswers,resultMarkup};\n})();\n'
+    '\n;globalThis.__SEA_QUIZ_TEST__={QUESTIONS,scoreAnswers,resultMarkup,signedIn};\n})();\n'
   );
   const context = {
     console,
     Number,
     Math,
-    document: { addEventListener() {} }
+    document: { addEventListener() {} },
+    localStorage: { getItem(key) { return Object.hasOwn(storage, key) ? storage[key] : null; } },
+    location: { pathname: '/quiz.html', search: '', hash: '', href: '' },
+    encodeURIComponent
   };
   context.globalThis = context;
   vm.createContext(context);
@@ -54,6 +57,22 @@ for (const quiz of quizzes) {
     assert.equal(scoreAnswers(correct), QUESTIONS.length);
     assert.equal(scoreAnswers(oneWrong), QUESTIONS.length - 1);
     assert.equal(scoreAnswers(QUESTIONS.map(() => null)), 0);
+  });
+
+  test(quiz.label + ' attempt ownership check requires a matching learner session', async () => {
+    const account = JSON.stringify({ email: 'learner@example.com' });
+    const matching = JSON.stringify({ email: 'learner@example.com' });
+    const different = JSON.stringify({ email: 'different@example.com' });
+
+    assert.equal((await loadQuiz(quiz.file)).signedIn(), false);
+    assert.equal((await loadQuiz(quiz.file, {
+      sea_account_v2: account,
+      sea_session_v2: matching
+    })).signedIn(), true);
+    assert.equal((await loadQuiz(quiz.file, {
+      sea_account_v2: account,
+      sea_session_v2: different
+    })).signedIn(), false);
   });
 
   test(quiz.label + ' result renders accurate score and review links', async () => {
