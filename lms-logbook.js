@@ -21,6 +21,7 @@
   const announce=(message)=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
   const focusElement=(element)=>{if(!element)return;requestAnimationFrame(()=>{try{element.focus({preventScroll:true})}catch{element.focus()}})};
   const focusDelete=(id)=>focusElement([...document.querySelectorAll('[data-log-delete]')].find(button=>button.dataset.logDelete===id));
+  const focusEdit=(id)=>focusElement([...document.querySelectorAll('[data-log-edit]')].find(button=>button.dataset.logEdit===id)||document.querySelector('[data-log-form] [name="title"]'));
   const focusSearch=()=>{const input=document.querySelector('[data-log-search]');if(!input)return;const end=input.value.length;requestAnimationFrame(()=>{try{input.focus({preventScroll:true})}catch{input.focus()}input.setSelectionRange(end,end)})};
   const addActivity=(label)=>{
     const state=read(LMS_KEY,{enrolled:{},saved:[],progress:{},activity:[]});
@@ -53,12 +54,12 @@
     const filteredEntries=filterEntries(entries);
     const visibleEntries=showAllEntries?filteredEntries:filteredEntries.slice(0,12);
     const filterTopicOptions='<option value="all">All learning topics</option>'+topics.map(x=>`<option value="${esc(x)}"${logbookTopic===x?' selected':''}>${esc(x)}</option>`).join('');
-    const rows=filteredEntries.length?visibleEntries.map(entry=>`<article class="lms-log-entry" data-log-id="${esc(entry.id)}"><div class="lms-log-entry-head"><div><span class="badge">${esc(entry.topic)}</span><h3>${esc(entry.title)}</h3></div><button class="lms-log-delete" type="button" data-log-delete="${esc(entry.id)}" aria-label="Delete logbook entry ${esc(entry.title)}">Delete</button></div><p class="lms-log-meta">${esc(entry.activity)}${entry.system?' · '+esc(entry.system):''} · ${esc(fmt(entry.createdAt))}</p>${entry.evidence?`<div class="lms-log-block"><strong>Evidence / observations</strong><p>${esc(entry.evidence)}</p></div>`:''}${entry.learning?`<div class="lms-log-block"><strong>Learning / reflection</strong><p>${esc(entry.learning)}</p></div>`:''}${entry.nextAction?`<div class="lms-log-block"><strong>Next action</strong><p>${esc(entry.nextAction)}</p></div>`:''}</article>`).join(''):entries.length?'<div class="lms-empty">No entries match the current search and learning-topic filter.</div>':'<div class="lms-empty">No practical learning entries yet. Record a safe, non-confidential observation, measurement, troubleshooting exercise or reflection to build your personal learning history.</div>';
+    const rows=filteredEntries.length?visibleEntries.map(entry=>`<article class="lms-log-entry" data-log-id="${esc(entry.id)}"><div class="lms-log-entry-head"><div><span class="badge">${esc(entry.topic)}</span><h3>${esc(entry.title)}</h3></div><div class="lms-log-entry-actions"><button class="lms-log-edit" type="button" data-log-edit="${esc(entry.id)}" aria-label="Edit logbook entry ${esc(entry.title)}">Edit</button><button class="lms-log-delete" type="button" data-log-delete="${esc(entry.id)}" aria-label="Delete logbook entry ${esc(entry.title)}">Delete</button></div></div><p class="lms-log-meta">${esc(entry.activity)}${entry.system?' · '+esc(entry.system):''} · ${esc(fmt(entry.createdAt))}</p>${entry.evidence?`<div class="lms-log-block"><strong>Evidence / observations</strong><p>${esc(entry.evidence)}</p></div>`:''}${entry.learning?`<div class="lms-log-block"><strong>Learning / reflection</strong><p>${esc(entry.learning)}</p></div>`:''}${entry.nextAction?`<div class="lms-log-block"><strong>Next action</strong><p>${esc(entry.nextAction)}</p></div>`:''}</article>`).join(''):entries.length?'<div class="lms-empty">No entries match the current search and learning-topic filter.</div>':'<div class="lms-empty">No practical learning entries yet. Record a safe, non-confidential observation, measurement, troubleshooting exercise or reflection to build your personal learning history.</div>';
     const filterControls=entries.length?`<div class="lms-log-fields"><label>Search saved entries<input type="search" data-log-search value="${esc(logbookQuery)}" placeholder="Search title, system, observations or learning" aria-controls="lms-log-list"></label><label>Filter by learning topic<select data-log-topic-filter aria-controls="lms-log-list">${filterTopicOptions}</select></label></div><p class="lms-local-note" role="status">${filteredEntries.length} of ${entries.length} entries match</p>`:'';
     const viewControl=filteredEntries.length>12?`<div class="lms-log-actions"><button class="btn btn-secondary" type="button" data-log-view-toggle aria-expanded="${showAllEntries}">${showAllEntries?'Show recent 12':'Show all '+filteredEntries.length+' matching entries'}</button></div>`:'';
 
     host.innerHTML=`<div class="lms-log-summary"><div><small>Local logbook entries</small><strong>${entries.length}</strong></div><div><small>Storage mode</small><strong>Browser only</strong></div><div><small>Formal competency record</small><strong>No</strong></div></div>
-    <div class="lms-logbook-grid"><form class="lms-log-form" data-log-form><div class="lms-log-fields"><label>Learning topic<select name="topic" required>${topicOptions}</select></label><label>Activity type<select name="activity" required>${activityOptions}</select></label><label class="lms-log-full">Entry title<input name="title" maxlength="90" required placeholder="Example: Investigated AHU low-airflow symptom"></label><label class="lms-log-full">Asset / system (optional)<input name="system" maxlength="80" placeholder="Use a generic description; avoid confidential asset identifiers"></label><label class="lms-log-full">Evidence / observations<textarea name="evidence" maxlength="1200" rows="4" placeholder="Record measurements, symptoms, checks or observations. Do not include passwords, personal data, confidential drawings or restricted company information."></textarea></label><label class="lms-log-full">What did you learn?<textarea name="learning" maxlength="1000" rows="3" placeholder="Summarize the engineering lesson, reasoning or principle you learned."></textarea></label><label class="lms-log-full">Next learning action (optional)<textarea name="nextAction" maxlength="600" rows="2" placeholder="Example: Review VFD guide and verify fan rotation/command logic next time."></textarea></label></div><div class="lms-log-actions"><button class="btn btn-primary" type="submit">Save logbook entry</button><button class="btn btn-secondary" type="button" data-log-export-json${entries.length?'':' disabled'}>Export JSON</button><button class="btn btn-secondary" type="button" data-log-export-csv${entries.length?'':' disabled'}>Export CSV</button></div><p class="lms-local-note"><strong>Privacy:</strong> this is a personal browser-local learning log. Do not record confidential employer information, personal data, passwords, restricted drawings, proprietary settings or safety-sensitive details. Logbook entries are educational reflections only and are not formal competency evidence or authorization to perform work.</p></form><div><h3 class="lms-log-recent-title">Recent entries</h3>${filterControls}<div class="lms-log-list" id="lms-log-list">${rows}</div>${viewControl}</div></div>`;
+    <div class="lms-logbook-grid"><form class="lms-log-form" data-log-form><p class="lms-local-note" data-log-edit-note hidden></p><div class="lms-log-fields"><label>Learning topic<select name="topic" required>${topicOptions}</select></label><label>Activity type<select name="activity" required>${activityOptions}</select></label><label class="lms-log-full">Entry title<input name="title" maxlength="90" required placeholder="Example: Investigated AHU low-airflow symptom"></label><label class="lms-log-full">Asset / system (optional)<input name="system" maxlength="80" placeholder="Use a generic description; avoid confidential asset identifiers"></label><label class="lms-log-full">Evidence / observations<textarea name="evidence" maxlength="1200" rows="4" placeholder="Record measurements, symptoms, checks or observations. Do not include passwords, personal data, confidential drawings or restricted company information."></textarea></label><label class="lms-log-full">What did you learn?<textarea name="learning" maxlength="1000" rows="3" placeholder="Summarize the engineering lesson, reasoning or principle you learned."></textarea></label><label class="lms-log-full">Next learning action (optional)<textarea name="nextAction" maxlength="600" rows="2" placeholder="Example: Review VFD guide and verify fan rotation/command logic next time."></textarea></label></div><div class="lms-log-actions"><button class="btn btn-primary" type="submit" data-log-submit>Save logbook entry</button><button class="btn btn-secondary" type="button" data-log-cancel-edit hidden>Cancel edit</button><button class="btn btn-secondary" type="button" data-log-export-json${entries.length?'':' disabled'}>Export JSON</button><button class="btn btn-secondary" type="button" data-log-export-csv${entries.length?'':' disabled'}>Export CSV</button></div><p class="lms-local-note"><strong>Privacy:</strong> this is a personal browser-local learning log. Do not record confidential employer information, personal data, passwords, restricted drawings, proprietary settings or safety-sensitive details. Logbook entries are educational reflections only and are not formal competency evidence or authorization to perform work.</p></form><div><h3 class="lms-log-recent-title">Recent entries</h3>${filterControls}<div class="lms-log-list" id="lms-log-list">${rows}</div>${viewControl}</div></div>`;
   };
 
   document.addEventListener('input',e=>{
@@ -83,25 +84,45 @@
     const form=e.target.closest('[data-log-form]');if(!form)return;
     e.preventDefault();
     const fd=new FormData(form);
-    const entry={
-      id:(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)),
+    const values={
       topic:String(fd.get('topic')||'').trim(),
       activity:String(fd.get('activity')||'').trim(),
       title:String(fd.get('title')||'').trim(),
       system:String(fd.get('system')||'').trim(),
       evidence:String(fd.get('evidence')||'').trim(),
       learning:String(fd.get('learning')||'').trim(),
-      nextAction:String(fd.get('nextAction')||'').trim(),
-      createdAt:new Date().toISOString()
+      nextAction:String(fd.get('nextAction')||'').trim()
     };
-    if(!entry.title||!entry.topic||!entry.activity)return;
-    const entries=getEntries();entries.unshift(entry);saveEntries(entries);
-    addActivity('Added practical learning log: '+entry.title);
-    render();announce('Practical learning logbook entry saved on this browser');
-    focusElement(document.querySelector('[data-log-form] [name="title"]'));
+    if(!values.title||!values.topic||!values.activity)return;
+    const entries=getEntries();const editingId=form.dataset.editingId;
+    if(editingId){
+      const index=entries.findIndex(entry=>entry.id===editingId);
+      if(index<0){render();announce('This logbook entry is no longer available to edit');return;}
+      entries[index]={...entries[index],...values,updatedAt:new Date().toISOString()};
+      saveEntries(entries);addActivity('Updated practical learning log: '+values.title);
+      render();announce('Practical learning logbook entry updated on this browser');focusEdit(editingId);
+    }else{
+      const entry={id:(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)),...values,createdAt:new Date().toISOString()};
+      entries.unshift(entry);saveEntries(entries);addActivity('Added practical learning log: '+entry.title);
+      render();announce('Practical learning logbook entry saved on this browser');
+      focusElement(document.querySelector('[data-log-form] [name="title"]'));
+    }
   });
 
   document.addEventListener('click',e=>{
+    const cancelEdit=e.target.closest('[data-log-cancel-edit]');
+    if(cancelEdit){render();announce('Logbook edit cancelled');focusElement(document.querySelector('[data-log-form] [name="title"]'));return;}
+    const edit=e.target.closest('[data-log-edit]');
+    if(edit){
+      const entry=getEntries().find(item=>item.id===edit.dataset.logEdit);const form=document.querySelector('[data-log-form]');
+      if(!entry||!form){announce('This logbook entry is no longer available to edit');return;}
+      ['topic','activity','title','system','evidence','learning','nextAction'].forEach(name=>{const field=form.elements[name];if(field)field.value=entry[name]||''});
+      form.dataset.editingId=entry.id;
+      const submit=form.querySelector('[data-log-submit]');if(submit)submit.textContent='Save changes';
+      const cancel=form.querySelector('[data-log-cancel-edit]');if(cancel)cancel.hidden=false;
+      const note=form.querySelector('[data-log-edit-note]');if(note){note.hidden=false;note.textContent='Editing: '+entry.title+'. The original creation time will be preserved.';}
+      announce('Editing logbook entry '+entry.title);focusElement(form.elements.title);return;
+    }
     const viewToggle=e.target.closest('[data-log-view-toggle]');
     if(viewToggle){
       showAllEntries=!showAllEntries;render();
