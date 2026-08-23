@@ -9,6 +9,8 @@
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const normalizeEmail=(value)=>String(value||'').trim().toLowerCase();
+  const registrationConflict=(existing,profile)=>!!(normalizeEmail(existing?.email)&&normalizeEmail(profile?.email)&&normalizeEmail(existing.email)!==normalizeEmail(profile.email));
   const currentTarget=()=>location.pathname+location.search+location.hash;
   const safeReturn=()=>{
     const params=new URLSearchParams(location.search);
@@ -119,6 +121,15 @@
           registeredAt:new Date().toISOString()
         };
         if(!profile.name||!profile.email) return;
+        if(registrationConflict(existing,profile)){
+          const error=document.getElementById('registrationError');
+          if(error){
+            error.hidden=false;
+            error.textContent='This browser already stores a learner profile and LMS records for another email. To prevent learner data from being mixed or overwritten, sign in with the existing profile or use a separate browser profile for another learner.';
+            error.focus();
+          }
+          return;
+        }
         write(ACCOUNT_KEY,profile);
         write(SESSION_KEY,{email:profile.email,signedInAt:new Date().toISOString()});
         localStorage.removeItem(LEGACY_KEY);
