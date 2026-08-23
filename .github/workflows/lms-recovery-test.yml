@@ -6,16 +6,20 @@ on:
     paths:
       - 'lms-import.js'
       - 'lms-logbook.js'
+      - 'lms-course-notes.js'
       - 'tests/lms-recovery.test.mjs'
       - 'tests/lms-logbook-recovery.test.mjs'
+      - 'tests/lms-course-notes.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   pull_request:
     branches: [main]
     paths:
       - 'lms-import.js'
       - 'lms-logbook.js'
+      - 'lms-course-notes.js'
       - 'tests/lms-recovery.test.mjs'
       - 'tests/lms-logbook-recovery.test.mjs'
+      - 'tests/lms-course-notes.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   workflow_dispatch:
 
@@ -35,5 +39,5 @@ jobs:
         with:
           node-version: 20
 
-      - name: Test complete and standalone LMS recovery
+      - name: Test LMS recovery and study note persistence
         run: node --test tests/*.test.mjs
