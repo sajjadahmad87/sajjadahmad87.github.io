@@ -3,6 +3,37 @@
   const nav=document.querySelector('.side-nav');
   if(!root||!nav)return;
 
+  const sidebar=nav.closest('.sidebar');
+  const navToggle=sidebar?.querySelector('[data-lms-side-nav-toggle]');
+  const navCurrent=sidebar?.querySelector('[data-lms-side-nav-current]');
+  const mobileNav=window.matchMedia?.('(max-width: 760px)');
+
+  const closeMobileNav=({restoreFocus=false}={})=>{
+    if(!sidebar||!navToggle)return;
+    sidebar.classList.remove('side-nav-open');
+    navToggle.setAttribute('aria-expanded','false');
+    if(restoreFocus)navToggle.focus();
+  };
+
+  if(sidebar&&navToggle&&mobileNav){
+    sidebar.classList.add('lms-nav-enhanced');
+    navToggle.addEventListener('click',()=>{
+      const open=!sidebar.classList.contains('side-nav-open');
+      sidebar.classList.toggle('side-nav-open',open);
+      navToggle.setAttribute('aria-expanded',String(open));
+      if(open)nav.querySelector('a.active, a')?.focus();
+    });
+    sidebar.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&sidebar.classList.contains('side-nav-open')){
+        event.preventDefault();
+        closeMobileNav({restoreFocus:true});
+      }
+    });
+    const syncMobileNav=()=>{if(!mobileNav.matches)closeMobileNav()};
+    mobileNav.addEventListener?.('change',syncMobileNav);
+    mobileNav.addListener?.(syncMobileNav);
+  }
+
   const links=()=>[...nav.querySelectorAll('a[href^="#"]')];
   const reduceMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   let observer=null;
@@ -21,6 +52,7 @@
       }else link.removeAttribute('aria-current');
     });
     if(activeLink){
+      if(navCurrent)navCurrent.textContent=activeLink.textContent.trim();
       activeLink.scrollIntoView({block:'nearest',inline:'nearest',behavior:reduceMotion?'auto':'smooth'});
     }
     if(updateHash&&history.replaceState&&location.hash!=='#'+id){
@@ -54,6 +86,7 @@
     if(!link)return;
     const id=decodeURIComponent((link.getAttribute('href')||'').slice(1));
     if(id)setActive(id,{updateHash:false});
+    if(mobileNav?.matches)closeMobileNav();
   });
 
   window.addEventListener('hashchange',()=>{
