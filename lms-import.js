@@ -127,15 +127,21 @@
       learner:{email:account.email||null,name:account.name||null},
       storage
     };
-    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=`SEA-complete-learning-backup-${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-    writeBackupMeta({lastBackupAt:exportedAt,hash:stateHash,keyCount:Object.keys(storage).length,activityUnits:activityCount,source:'export'});
-    renderBackupHealth();
-    announce(`Complete learner backup exported with ${Object.keys(storage).length} LMS data sets.`);
+    let url='';
+    try{
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+      const a=document.createElement('a');
+      url=URL.createObjectURL(blob);a.href=url;
+      a.download=`SEA-complete-learning-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.hidden=true;document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      writeBackupMeta({lastBackupAt:exportedAt,hash:stateHash,keyCount:Object.keys(storage).length,activityUnits:activityCount,source:'export'});
+      renderBackupHealth();
+      announce(`Complete learner backup exported with ${Object.keys(storage).length} LMS data sets.`);
+    }catch{
+      if(url)URL.revokeObjectURL(url);
+      announce('Complete learner backup could not start. Your backup status was not changed; please try again or use another browser.');
+    }
   };
 
   const validateComplete=(payload)=>{
@@ -161,8 +167,15 @@
     }
     if(!confirm(`Restore ${keys.length} SEA LMS data sets from this complete backup? Matching local LMS data will be replaced. Your sign-in/session data is not changed.`))return false;
     const prepared=keys.map(key=>[key,JSON.stringify(payload.storage[key])]);
-    prepared.forEach(([key,value])=>localStorage.setItem(key,value));
-    writeBackupMeta({lastBackupAt:payload.exportedAt||new Date().toISOString(),hash:fingerprint(payload.storage),keyCount:keys.length,activityUnits:storageActivityUnits(payload.storage),source:'restore',restoredAt:new Date().toISOString()});
+    const previous=keys.map(key=>[key,localStorage.getItem(key)]);
+    try{
+      prepared.forEach(([key,value])=>localStorage.setItem(key,value));
+      writeBackupMeta({lastBackupAt:payload.exportedAt||new Date().toISOString(),hash:fingerprint(payload.storage),keyCount:keys.length,activityUnits:storageActivityUnits(payload.storage),source:'restore',restoredAt:new Date().toISOString()});
+    }catch{
+      previous.forEach(([key,value])=>{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,value)});
+      announce('Complete learner backup could not be restored. Your previous browser-local LMS data was retained.');
+      return false;
+    }
     announce('Complete learner backup restored successfully. Reloading dashboard…');
     setTimeout(()=>location.reload(),350);
     return true;
