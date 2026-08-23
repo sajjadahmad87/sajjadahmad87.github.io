@@ -41,15 +41,16 @@
     const card=document.createElement('div');
     card.className='content-card';
     card.dataset.lmsCourseNotes='';
-    card.innerHTML=`<h2>My study notes</h2><p class="lead">Save concise personal learning notes for this course on this browser. They are included in the complete SEA learner backup.</p><div class="field"><label for="lmsCourseNote">Course note</label><textarea id="lmsCourseNote" maxlength="${MAX}" aria-describedby="lmsCourseNoteCount lmsCourseNoteStatus" placeholder="Record key concepts, questions to revisit, calculations to practise, or non-confidential learning takeaways."></textarea><small id="lmsCourseNoteCount" data-lms-note-count aria-live="polite"></small></div><div class="lms-toolbar" style="margin-top:12px"><button class="btn btn-primary" type="button" data-lms-note-save>Save note</button><button class="btn btn-secondary" type="button" data-lms-note-clear>Clear note</button></div><p class="lms-local-note" id="lmsCourseNoteStatus" data-lms-note-status>Browser-local only. Do not enter employer-confidential information, passwords, restricted drawings, proprietary settings, personal data, or sensitive operational details.</p>`;
+    card.innerHTML=`<h2>My study notes</h2><p class="lead">Save concise personal learning notes for this course on this browser. They are included in the complete SEA learner backup.</p><div class="field"><label for="lmsCourseNote">Course note</label><textarea id="lmsCourseNote" maxlength="${MAX}" aria-describedby="lmsCourseNoteCount lmsCourseNoteStatus" placeholder="Record key concepts, questions to revisit, calculations to practise, or non-confidential learning takeaways."></textarea><small id="lmsCourseNoteCount" data-lms-note-count aria-live="polite"></small></div><label class="lms-note-review"><input type="checkbox" data-lms-note-review> Add this note to my revision queue</label><div class="lms-toolbar" style="margin-top:12px"><button class="btn btn-primary" type="button" data-lms-note-save>Save note</button><button class="btn btn-secondary" type="button" data-lms-note-clear>Clear note</button></div><p class="lms-local-note" id="lmsCourseNoteStatus" data-lms-note-status>Browser-local only. Do not enter employer-confidential information, passwords, restricted drawings, proprietary settings, personal data, or sensitive operational details.</p>`;
     if(quiz)quiz.insertAdjacentElement('afterend',card);else host.appendChild(card);
     const area=card.querySelector('textarea');
     const status=card.querySelector('[data-lms-note-status]');
     const count=card.querySelector('[data-lms-note-count]');
     const saveButton=card.querySelector('[data-lms-note-save]');
-    let savedSnapshot=String(saved.text||'').slice(0,MAX);
-    area.value=savedSnapshot;
-    const isDirty=()=>area.value.trim()!==savedSnapshot.trim();
+    const review=card.querySelector('[data-lms-note-review]');
+    let savedSnapshot=String(saved.text||'').slice(0,MAX),savedReview=!!saved.needsReview;
+    area.value=savedSnapshot;review.checked=savedReview;
+    const isDirty=()=>area.value.trim()!==savedSnapshot.trim()||review.checked!==savedReview;
     const refresh=()=>{
       count.textContent=`${area.value.length.toLocaleString()} / ${MAX.toLocaleString()} characters`;
       const current=(read()[id]||{});
@@ -60,15 +61,16 @@
     };
     const saveNote=()=>{
       const text=area.value.trim().slice(0,MAX),state=read();
-      if(text){state[id]={...(state[id]||{}),text,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;area.value=text;announce('Course study note saved.');}
-      else{delete state[id];write(state);savedSnapshot='';area.value='';announce('Empty course note removed.');}
+      if(text){state[id]={...(state[id]||{}),text,needsReview:review.checked,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;savedReview=review.checked;area.value=text;announce(review.checked?'Course study note saved to the revision queue.':'Course study note saved.');}
+      else{delete state[id];write(state);savedSnapshot='';savedReview=false;area.value='';review.checked=false;announce('Empty course note removed.');}
       refresh();
     };
     area.addEventListener('input',refresh);
+    review.addEventListener('change',refresh);
     area.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(isDirty())saveNote()}});
     window.addEventListener('beforeunload',e=>{if(!isDirty())return;e.preventDefault();e.returnValue=''});
     saveButton.addEventListener('click',saveNote);
-    card.querySelector('[data-lms-note-clear]').addEventListener('click',()=>{if(!area.value&&!read()[id])return;if(!confirm('Clear this browser-local course note?'))return;const state=read();delete state[id];write(state);savedSnapshot='';area.value='';refresh();announce('Course study note cleared.');});
+    card.querySelector('[data-lms-note-clear]').addEventListener('click',()=>{if(!area.value&&!read()[id])return;if(!confirm('Clear this browser-local course note?'))return;const state=read();delete state[id];write(state);savedSnapshot='';savedReview=false;area.value='';review.checked=false;refresh();announce('Course study note cleared.');});
     refresh();
   };
 
@@ -79,11 +81,11 @@
     dialog.dataset.lmsNotesDialog='';
     dialog.setAttribute('aria-labelledby','lmsCatalogNoteTitle');
     dialog.style.cssText='width:min(680px,calc(100% - 28px));border:1px solid rgba(145,225,255,.2);border-radius:16px;padding:0;background:#0b1b28;color:#f3f8fb;box-shadow:0 24px 70px rgba(0,0,0,.45)';
-    dialog.innerHTML=`<div style="padding:22px"><div style="display:flex;justify-content:space-between;gap:16px;align-items:start"><div><span class="label">PERSONAL STUDY NOTE</span><h2 id="lmsCatalogNoteTitle" style="margin:7px 0 4px;font-size:20px"></h2></div><button class="btn btn-secondary" type="button" data-lms-note-close aria-label="Close study note">Close</button></div><p class="lms-local-note">Save a personal note for this learning path. Notes stay in this browser and are included in the complete SEA learner backup.</p><div class="field"><label for="lmsCatalogNoteArea">Study note</label><textarea id="lmsCatalogNoteArea" maxlength="${MAX}" aria-describedby="lmsCatalogNoteCount lmsCatalogNoteStatus" placeholder="Record key concepts, questions to revisit, calculations to practise, or non-confidential learning takeaways."></textarea><small id="lmsCatalogNoteCount" data-lms-catalog-note-count aria-live="polite"></small></div><div class="lms-toolbar" style="margin-top:12px"><button class="btn btn-primary" type="button" data-lms-catalog-note-save>Save note</button><button class="btn btn-secondary" type="button" data-lms-catalog-note-clear>Clear note</button></div><p class="lms-local-note" id="lmsCatalogNoteStatus" data-lms-catalog-note-status></p></div>`;
+    dialog.innerHTML=`<div style="padding:22px"><div style="display:flex;justify-content:space-between;gap:16px;align-items:start"><div><span class="label">PERSONAL STUDY NOTE</span><h2 id="lmsCatalogNoteTitle" style="margin:7px 0 4px;font-size:20px"></h2></div><button class="btn btn-secondary" type="button" data-lms-note-close aria-label="Close study note">Close</button></div><p class="lms-local-note">Save a personal note for this learning path. Notes stay in this browser and are included in the complete SEA learner backup.</p><div class="field"><label for="lmsCatalogNoteArea">Study note</label><textarea id="lmsCatalogNoteArea" maxlength="${MAX}" aria-describedby="lmsCatalogNoteCount lmsCatalogNoteStatus" placeholder="Record key concepts, questions to revisit, calculations to practise, or non-confidential learning takeaways."></textarea><small id="lmsCatalogNoteCount" data-lms-catalog-note-count aria-live="polite"></small></div><label class="lms-note-review"><input type="checkbox" data-lms-catalog-note-review> Add this note to my revision queue</label><div class="lms-toolbar" style="margin-top:12px"><button class="btn btn-primary" type="button" data-lms-catalog-note-save>Save note</button><button class="btn btn-secondary" type="button" data-lms-catalog-note-clear>Clear note</button></div><p class="lms-local-note" id="lmsCatalogNoteStatus" data-lms-catalog-note-status></p></div>`;
     document.body.appendChild(dialog);
-    const title=dialog.querySelector('#lmsCatalogNoteTitle'),area=dialog.querySelector('textarea'),count=dialog.querySelector('[data-lms-catalog-note-count]'),status=dialog.querySelector('[data-lms-catalog-note-status]'),save=dialog.querySelector('[data-lms-catalog-note-save]');
-    let currentId='',savedSnapshot='';
-    const dirty=()=>area.value.trim()!==savedSnapshot.trim();
+    const title=dialog.querySelector('#lmsCatalogNoteTitle'),area=dialog.querySelector('textarea'),count=dialog.querySelector('[data-lms-catalog-note-count]'),status=dialog.querySelector('[data-lms-catalog-note-status]'),save=dialog.querySelector('[data-lms-catalog-note-save]'),review=dialog.querySelector('[data-lms-catalog-note-review]');
+    let currentId='',savedSnapshot='',savedReview=false;
+    const dirty=()=>area.value.trim()!==savedSnapshot.trim()||review.checked!==savedReview;
     const refresh=()=>{
       count.textContent=`${area.value.length.toLocaleString()} / ${MAX.toLocaleString()} characters`;
       const current=(read()[currentId]||{});
@@ -94,18 +96,19 @@
     };
     const openFor=id=>{
       if(dirty()&&!confirm('Discard unsaved changes and open another course note?'))return;
-      currentId=id;const saved=read()[id]||{};savedSnapshot=String(saved.text||'').slice(0,MAX);area.value=savedSnapshot;title.textContent=courseTitle(id);refresh();
+      currentId=id;const saved=read()[id]||{};savedSnapshot=String(saved.text||'').slice(0,MAX);savedReview=!!saved.needsReview;area.value=savedSnapshot;review.checked=savedReview;title.textContent=courseTitle(id);refresh();
       if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
       setTimeout(()=>area.focus(),0);
     };
     const close=()=>{if(dirty()&&!confirm('Close without saving your changes?'))return;if(typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open')};
-    const saveNote=()=>{if(!currentId)return;const state=read(),text=area.value.trim().slice(0,MAX);if(text){state[currentId]={...(state[currentId]||{}),text,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;area.value=text;announce('Course study note saved.');}else{delete state[currentId];write(state);savedSnapshot='';area.value='';announce('Empty course note removed.');}refresh();};
+    const saveNote=()=>{if(!currentId)return;const state=read(),text=area.value.trim().slice(0,MAX);if(text){state[currentId]={...(state[currentId]||{}),text,needsReview:review.checked,updatedAt:new Date().toISOString()};write(state);savedSnapshot=text;savedReview=review.checked;area.value=text;announce(review.checked?'Course study note saved to the revision queue.':'Course study note saved.');}else{delete state[currentId];write(state);savedSnapshot='';savedReview=false;area.value='';review.checked=false;announce('Empty course note removed.');}refresh();};
     area.addEventListener('input',refresh);
+    review.addEventListener('change',refresh);
     area.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();if(dirty())saveNote()}});
     dialog.addEventListener('cancel',e=>{e.preventDefault();close()});
     dialog.querySelector('[data-lms-note-close]').addEventListener('click',close);
     save.addEventListener('click',saveNote);
-    dialog.querySelector('[data-lms-catalog-note-clear]').addEventListener('click',()=>{if(!currentId||(!area.value&&!read()[currentId]))return;if(!confirm('Clear this browser-local course note?'))return;const state=read();delete state[currentId];write(state);savedSnapshot='';area.value='';refresh();announce('Course study note cleared.');});
+    dialog.querySelector('[data-lms-catalog-note-clear]').addEventListener('click',()=>{if(!currentId||(!area.value&&!read()[currentId]))return;if(!confirm('Clear this browser-local course note?'))return;const state=read();delete state[currentId];write(state);savedSnapshot='';savedReview=false;area.value='';review.checked=false;refresh();announce('Course study note cleared.');});
     window.addEventListener('beforeunload',e=>{if(!dialog.hasAttribute('open')||!dirty())return;e.preventDefault();e.returnValue=''});
     cards.forEach(card=>{
       if(!card.id||card.querySelector('[data-lms-catalog-note]'))return;
@@ -121,11 +124,24 @@
     const panel=document.createElement('section');panel.className='panel';panel.id='study-notes';panel.dataset.lmsStudyNotesSummary='';
     const entries=Object.entries(read()).filter(([,v])=>v&&String(v.text||'').trim()).sort((a,b)=>new Date(b[1].updatedAt||0)-new Date(a[1].updatedAt||0));
     const categories=[...new Set(entries.map(([id])=>courseCategory(id)))].sort();
-    const rows=entries.length?entries.map(([id,v])=>{const text=String(v.text||'').replace(/\s+/g,' ').trim(),snippet=text.length>150?text.slice(0,147)+'…':text,title=courseTitle(id),category=courseCategory(id),search=(title+' '+category+' '+text).toLowerCase();return `<div class="lms-item" data-lms-note-row data-note-category="${esc(category)}" data-note-search="${esc(search)}"><div class="lms-item-icon">NOTE</div><div><h3>${esc(title)}</h3><p>${esc(snippet)}</p><small>${esc(category)} · ${v.updatedAt?'Last saved '+formatWhen(v.updatedAt):'Saved locally'}</small></div><a class="btn btn-secondary" href="${courseHref(id)}">Open course</a></div>`}).join(''):'<p class="lms-local-note">No course-specific study notes saved yet. Open the course catalog or a supported course and use “Study note” to record key learning takeaways.</p>';
+    const rows=entries.length?entries.map(([id,v])=>{const text=String(v.text||'').replace(/\s+/g,' ').trim(),snippet=text.length>150?text.slice(0,147)+'…':text,title=courseTitle(id),category=courseCategory(id),search=(title+' '+category+' '+text).toLowerCase();return `<div class="lms-item" data-lms-note-row data-note-category="${esc(category)}" data-note-search="${esc(search)}"><div class="lms-item-icon">NOTE</div><div><h3>${esc(title)}</h3><p>${esc(snippet)}</p><small>${esc(category)} · ${v.updatedAt?'Last saved '+formatWhen(v.updatedAt):'Saved locally'}<span data-lms-note-review-status>${v.needsReview?' · Revision queued':''}</span></small></div><div class="lms-note-row-actions"><a class="btn btn-secondary" href="${courseHref(id)}">Open course</a>${v.needsReview?`<button class="btn btn-secondary" type="button" data-lms-note-reviewed data-note-id="${esc(id)}">Mark reviewed</button>`:''}</div></div>`}).join(''):'<p class="lms-local-note">No course-specific study notes saved yet. Open the course catalog or a supported course and use “Study note” to record key learning takeaways.</p>';
     const categoryOptions=categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
     panel.innerHTML=`<h2>Course study notes</h2><p class="lms-local-note">Personal browser-local notes are included in the complete learner backup. Search notes by course, topic or note text, and keep entries educational and non-confidential.</p>${entries.length?`<div class="catalog-tools" style="grid-template-columns:minmax(0,1fr) minmax(180px,240px);margin-bottom:10px"><input type="search" data-lms-note-search aria-label="Search saved study notes" placeholder="Search notes, courses or topics…"><select data-lms-note-category aria-label="Filter study notes by learning area"><option value="">All learning areas</option>${categoryOptions}</select></div><p class="lms-local-note" data-lms-note-results aria-live="polite">${entries.length} saved ${entries.length===1?'note':'notes'}</p>`:''}<div class="lms-list" data-lms-note-list>${rows}</div>${entries.length?'<p class="lms-local-note" data-lms-note-empty hidden>No saved notes match the current search and learning-area filter.</p>':''}`;
     if(learning)learning.insertAdjacentElement('beforebegin',panel);else main.appendChild(panel);
     const nav=document.querySelector('.side-nav');if(nav&&!nav.querySelector('a[href="#study-notes"]')){const a=document.createElement('a');a.href='#study-notes';a.textContent='Study Notes';const learningLink=nav.querySelector('a[href="#learning"]');if(learningLink)learningLink.insertAdjacentElement('beforebegin',a);else nav.appendChild(a)};
+    panel.addEventListener('click',event=>{
+      const button=event.target.closest('[data-lms-note-reviewed]');
+      if(!button)return;
+      const id=button.dataset.noteId,state=read(),note=state[id];
+      if(!note)return;
+      state[id]={...note,needsReview:false,reviewedAt:new Date().toISOString()};
+      write(state);
+      const row=button.closest('[data-lms-note-row]'),reviewStatus=row?.querySelector('[data-lms-note-review-status]');
+      if(reviewStatus)reviewStatus.textContent=' · Reviewed';
+      button.remove();
+      announce('Study note marked as reviewed.');
+      document.dispatchEvent(new CustomEvent('sea:study-notes-updated'));
+    });
     if(entries.length){
       const searchInput=panel.querySelector('[data-lms-note-search]'),categorySelect=panel.querySelector('[data-lms-note-category]'),resultText=panel.querySelector('[data-lms-note-results]'),empty=panel.querySelector('[data-lms-note-empty]'),noteRows=[...panel.querySelectorAll('[data-lms-note-row]')];
       const applyFilters=()=>{
