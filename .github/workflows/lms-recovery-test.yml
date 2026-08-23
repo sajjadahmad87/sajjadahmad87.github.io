@@ -5,13 +5,17 @@ on:
     branches: [main]
     paths:
       - 'lms-import.js'
+      - 'lms-logbook.js'
       - 'tests/lms-recovery.test.mjs'
+      - 'tests/lms-logbook-recovery.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   pull_request:
     branches: [main]
     paths:
       - 'lms-import.js'
+      - 'lms-logbook.js'
       - 'tests/lms-recovery.test.mjs'
+      - 'tests/lms-logbook-recovery.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   workflow_dispatch:
 
@@ -31,5 +35,5 @@ jobs:
         with:
           node-version: 20
 
-      - name: Test LMS recovery validation and rollback
-        run: node --test tests/lms-recovery.test.mjs
+      - name: Test complete and standalone LMS recovery
+        run: node --test tests/*.test.mjs
