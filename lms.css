@@ -19,3 +19,11 @@
   .lms-nav-enhanced .side-nav{display:none;grid-template-columns:1fr;max-height:min(60vh,480px);margin-top:8px;padding:6px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:10px;background:#081520}
   .lms-nav-enhanced.side-nav-open .side-nav{display:grid}
 }
+
+
+/* Study-note revision controls */
+.lms-note-review{display:flex;align-items:center;gap:9px;min-height:44px;margin-top:12px;color:#a9c3d1;font-size:11px;cursor:pointer}
+.lms-note-review input{width:18px;height:18px;accent-color:var(--cyan)}
+.lms-note-row-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.lms-note-row-actions .btn{min-height:44px;padding:10px 13px}
+@media(max-width:760px){.lms-note-row-actions{grid-column:1/-1;justify-content:stretch}.lms-note-row-actions .btn{flex:1}}
