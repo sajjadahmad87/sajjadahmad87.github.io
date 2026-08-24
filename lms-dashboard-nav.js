@@ -210,7 +210,8 @@
 
   const lazyModules=[
     {id:'weekly-trends',src:'/lms-weekly-trends.js'},
-    {id:'development-attention',src:'/lms-development-attention.js'}
+    {id:'development-attention',src:'/lms-development-attention.js'},
+    {id:'logbook',src:'/lms-logbook.js?v=20260824-lazy'}
   ];
   const loadedModules=new Set();
 
