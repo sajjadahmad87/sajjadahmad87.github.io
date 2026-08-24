@@ -38,8 +38,25 @@
     raw.activity=Array.isArray(raw.activity)?raw.activity:[];
     return raw;
   };
-  const saveState=(state)=>{state.updatedAt=new Date().toISOString();write(LMS_KEY,state)};
-  const announce=(message)=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
+  const announce=(message)=>{
+    const live=document.querySelector('[data-lms-live]');if(!live)return;
+    live.classList.remove('lms-live-error');live.removeAttribute('role');live.removeAttribute('tabindex');live.setAttribute('aria-live','polite');live.textContent=message;
+  };
+  const announceSaveError=()=>{
+    const live=document.querySelector('[data-lms-live]');if(!live)return;
+    live.classList.add('lms-live-error');live.setAttribute('role','alert');live.setAttribute('aria-live','assertive');live.setAttribute('tabindex','-1');
+    live.textContent='Your learning change could not be saved because browser storage is unavailable. Your previous progress is unchanged.';
+    try{live.focus({preventScroll:true})}catch{live.focus()}
+  };
+  const persistState=(storage,state,updatedAt=new Date().toISOString())=>{
+    const hadUpdatedAt=Object.prototype.hasOwnProperty.call(state,'updatedAt'),previousUpdatedAt=state.updatedAt;
+    state.updatedAt=updatedAt;
+    try{storage.setItem(LMS_KEY,JSON.stringify(state));return true}catch{
+      if(hadUpdatedAt)state.updatedAt=previousUpdatedAt;else delete state.updatedAt;
+      return false;
+    }
+  };
+  const saveState=(state)=>{const saved=persistState(localStorage,state);if(!saved)announceSaveError();return saved};
   const loginForCurrent=()=>{
     const target=location.pathname+location.search+location.hash;
     location.href='/signin.html?return='+encodeURIComponent(target);
@@ -72,7 +89,7 @@
       state.enrolled[courseId]={enrolledAt:new Date().toISOString(),lastOpenedAt:new Date().toISOString()};
       addActivity(state,'enrolled',courseId,'Enrolled in '+meta.title);
     }else state.enrolled[courseId].lastOpenedAt=new Date().toISOString();
-    saveState(state);announce('Enrolled in '+meta.title);return true;
+    if(!saveState(state))return false;announce('Enrolled in '+meta.title);return true;
   };
   const toggleSaved=(courseId)=>{
     if(!signedIn()){loginForCurrent();return null}
@@ -80,13 +97,13 @@
     const state=getState();const i=state.saved.indexOf(courseId);let saved;
     if(i>=0){state.saved.splice(i,1);saved=false;addActivity(state,'unsaved',courseId,'Removed '+meta.title+' from saved learning')}
     else{state.saved.unshift(courseId);saved=true;addActivity(state,'saved',courseId,'Saved '+meta.title)}
-    saveState(state);announce(saved?'Course saved':'Course removed from saved learning');return saved;
+    if(!saveState(state))return null;announce(saved?'Course saved':'Course removed from saved learning');return saved;
   };
   const touchCourse=(courseId)=>{
     if(!COURSES[courseId]||!signedIn())return;
     const state=getState();
     if(state.enrolled[courseId]) state.enrolled[courseId].lastOpenedAt=new Date().toISOString();
-    addActivity(state,'opened',courseId,'Opened '+COURSES[courseId].title);saveState(state);
+    addActivity(state,'opened',courseId,'Opened '+COURSES[courseId].title);return saveState(state);
   };
   const setModule=(courseId,moduleId,done)=>{
     const module=HVAC_MODULES.find(item=>item.id===moduleId);
@@ -96,7 +113,8 @@
     const p=ensureProgress(state,courseId);p.modules[moduleId]=!!done;p.updatedAt=new Date().toISOString();
     state.enrolled[courseId].lastOpenedAt=new Date().toISOString();
     addActivity(state,done?'module-complete':'module-reopened',courseId,(done?'Completed ':'Reopened ')+module.title);
-    saveState(state);renderCourseProgress();announce((done?'Completed ':'Reopened ')+module.title);
+    if(!saveState(state)){renderCourseProgress();return false}
+    renderCourseProgress();announce((done?'Completed ':'Reopened ')+module.title);return true;
   };
   const formatDate=(iso)=>{if(!iso)return '—';try{return new Intl.DateTimeFormat('en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso))}catch{return iso}};
   const esc=(s)=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -211,5 +229,5 @@
     const courseId=document.body.dataset.lmsCourse;if(courseId)touchCourse(courseId);
   });
 
-  window.SEALMS={getState,enroll,toggleSaved,completedModuleCount,progressPercent,dashboardCourseStatus};
+  window.SEALMS={getState,enroll,toggleSaved,completedModuleCount,progressPercent,dashboardCourseStatus,persistState};
 })();
