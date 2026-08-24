@@ -100,3 +100,27 @@ test('failed LMS persistence restores state metadata for safe UI rollback', asyn
   assert.equal(persistState(storage, stateWithoutTimestamp, 'failed-update'), false);
   assert.equal(Object.hasOwn(stateWithoutTimestamp, 'updatedAt'), false);
 });
+
+test('course-progress reset reports browser storage deletion accurately', async () => {
+  const { resetLearningState } = await loadLms();
+  const values = new Map([['sea_lms_state_v1', '{"saved":["root-cause-analysis"]}']]);
+  const workingStorage = {
+    getItem(key) { return values.get(key) ?? null; },
+    removeItem(key) { values.delete(key); }
+  };
+  const blockedStorage = {
+    getItem() { return '{"saved":["root-cause-analysis"]}'; },
+    removeItem() { throw new Error('storage unavailable'); }
+  };
+
+  assert.equal(resetLearningState(workingStorage), true);
+  assert.equal(values.has('sea_lms_state_v1'), false);
+  assert.equal(resetLearningState(blockedStorage), false);
+});
+
+test('dashboard describes the limited scope of course-progress reset', async () => {
+  const dashboard = await readFile(new URL('../student-dashboard.html', import.meta.url), 'utf8');
+
+  assert.match(dashboard, /data-lms-reset>Reset course progress<\/button>/);
+  assert.match(dashboard, /quiz attempts, study notes, logbook entries, goals and the learner account remain/i);
+});
