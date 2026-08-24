@@ -12,7 +12,17 @@
   const REMINDER_AGE_DAYS=7;
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
-  const announce=(message)=>{const live=document.querySelector('[data-lms-live]');if(live)live.textContent=message};
+  const announce=(message,{error=false}={})=>{
+    const live=document.querySelector('[data-lms-live]');if(!live)return;
+    live.classList.toggle('lms-live-error',error);
+    if(error){
+      live.setAttribute('role','alert');live.setAttribute('aria-live','assertive');live.setAttribute('tabindex','-1');
+      live.textContent=message;
+      try{live.focus({preventScroll:true})}catch{live.focus()}
+      return;
+    }
+    live.removeAttribute('role');live.removeAttribute('tabindex');live.setAttribute('aria-live','polite');live.textContent=message;
+  };
   const email=()=>String(read(ACCOUNT_KEY)?.email||'').trim().toLowerCase();
   const safeKey=(key)=>typeof key==='string'&&key.startsWith(LMS_PREFIX)&&/^sea_lms_[a-z0-9_-]+$/i.test(key);
   const formatWhen=(iso)=>{if(!iso)return 'Not yet';const d=new Date(iso);return Number.isNaN(d.getTime())?'Unknown':d.toLocaleString([], {dateStyle:'medium',timeStyle:'short'})};
@@ -140,7 +150,7 @@
       announce(`Complete learner backup exported with ${Object.keys(storage).length} LMS data sets.`);
     }catch{
       if(url)URL.revokeObjectURL(url);
-      announce('Complete learner backup could not start. Your backup status was not changed; please try again or use another browser.');
+      announce('Complete learner backup could not start. Your backup status was not changed; please try again or use another browser.',{error:true});
     }
   };
 
@@ -162,7 +172,7 @@
     const currentEmail=email();
     const backupEmail=String(payload?.learner?.email||'').trim().toLowerCase();
     if(currentEmail&&backupEmail&&currentEmail!==backupEmail){
-      announce('This complete backup belongs to a different learner account and was not restored.');
+      announce('This complete backup belongs to a different learner account and was not restored.',{error:true});
       return false;
     }
     if(!confirm(`Restore ${keys.length} SEA LMS data sets from this complete backup? Matching local LMS data will be replaced. Your sign-in/session data is not changed.`))return false;
@@ -173,7 +183,7 @@
       writeBackupMeta({lastBackupAt:payload.exportedAt||new Date().toISOString(),hash:fingerprint(payload.storage),keyCount:keys.length,activityUnits:storageActivityUnits(payload.storage),source:'restore',restoredAt:new Date().toISOString()});
     }catch{
       previous.forEach(([key,value])=>{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,value)});
-      announce('Complete learner backup could not be restored. Your previous browser-local LMS data was retained.');
+      announce('Complete learner backup could not be restored. Your previous browser-local LMS data was retained.',{error:true});
       return false;
     }
     announce('Complete learner backup restored successfully. Reloading dashboard…');
@@ -187,7 +197,7 @@
     const currentEmail=email();
     const backupEmail=String(payload?.account?.email||'').trim().toLowerCase();
     if(currentEmail&&backupEmail&&currentEmail!==backupEmail){
-      announce('This backup belongs to a different learner account and was not restored.');
+      announce('This backup belongs to a different learner account and was not restored.',{error:true});
       return false;
     }
     if(!confirm('Restore this older SEA core learning-progress backup? Existing core LMS progress will be replaced; newer auxiliary LMS data will remain unchanged.'))return false;
@@ -216,7 +226,7 @@
     input.addEventListener('change',()=>{
       const file=input.files&&input.files[0];
       if(!file)return;
-      if(file.size>MAX_FILE_BYTES){announce('Backup file is too large to restore. No data was changed.');input.value='';return}
+      if(file.size>MAX_FILE_BYTES){announce('Backup file is too large to restore. No data was changed.',{error:true});input.value='';return}
       const reader=new FileReader();
       reader.onload=()=>{
         try{
@@ -224,10 +234,10 @@
           const keys=validateComplete(payload);
           if(keys)restoreComplete(payload,keys);else restoreLegacy(payload);
         }catch(err){
-          announce('This file is not a valid SEA learner backup. No data was changed.');
+          announce('This file is not a valid SEA learner backup. No data was changed.',{error:true});
         }finally{input.value=''}
       };
-      reader.onerror=()=>{announce('The backup file could not be read. No data was changed.');input.value=''};
+      reader.onerror=()=>{announce('The backup file could not be read. No data was changed.',{error:true});input.value=''};
       reader.readAsText(file);
     });
   });
