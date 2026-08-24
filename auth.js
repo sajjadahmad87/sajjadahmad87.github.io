@@ -10,6 +10,7 @@
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
   const normalizeEmail=(value)=>String(value||'').trim().toLowerCase();
+  const isUsableAccount=(account)=>!!normalizeEmail(account?.email);
   const registrationConflict=(existing,profile)=>!!(normalizeEmail(existing?.email)&&normalizeEmail(profile?.email)&&normalizeEmail(existing.email)!==normalizeEmail(profile.email));
   const currentTarget=()=>location.pathname+location.search+location.hash;
   const safeReturn=()=>{
@@ -118,10 +119,10 @@
     if(registrationForm){
       const existing=getAccount();
       const existingBox=document.getElementById('existingRegistration');
-      if(existing&&existingBox){
-        existingBox.hidden=false;
+      if(isUsableAccount(existing)&&existingBox){
         const existingName=existingBox.querySelector('[data-existing-name]');
         if(existingName) existingName.textContent=existing.name||existing.email||'Registered learner';
+        existingBox.hidden=false;
       }
       registrationForm.addEventListener('submit',e=>{
         e.preventDefault();
@@ -183,7 +184,8 @@
 
     document.querySelectorAll('[data-sea-continue]').forEach(el=>el.addEventListener('click',()=>{
       const account=getAccount();
-      if(account) write(SESSION_KEY,{email:account.email,signedInAt:new Date().toISOString()});
+      if(!isUsableAccount(account)) return;
+      write(SESSION_KEY,{email:account.email,signedInAt:new Date().toISOString()});
       location.href=safeReturn();
     }));
   });
