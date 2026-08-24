@@ -96,3 +96,15 @@ test('legacy notes without revision metadata remain readable', () => {
 
   assert.equal(api.read()['preventive-maintenance-planning'].text, 'Legacy note');
 });
+
+test('dashboard study notes are lazy-loaded with a stable navigation target', async () => {
+  const dashboard = await readFile(new URL('../student-dashboard.html', import.meta.url), 'utf8');
+  const navigation = await readFile(new URL('../lms-dashboard-nav.js', import.meta.url), 'utf8');
+  const marketplace = await readFile(new URL('../marketplace.js', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(dashboard, /<script[^>]+src="lms-course-notes\.js/);
+  assert.match(dashboard, /<a href="#study-notes">Study Notes<\/a>/);
+  assert.match(dashboard, /<section class="panel" id="study-notes"/);
+  assert.match(navigation, /\{id:'study-notes',src:'\/lms-course-notes\.js\?v=20260824-lazy'\}/);
+  assert.doesNotMatch(marketplace, /document\.querySelector\('\[data-lms-dashboard\]'\)\|\|cards\.length/);
+});
