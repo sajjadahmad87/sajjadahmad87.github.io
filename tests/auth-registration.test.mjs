@@ -7,7 +7,7 @@ async function loadAuth(search = '') {
   let source = await readFile(new URL('../auth.js', import.meta.url), 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
+    '\n;globalThis.__SEA_AUTH_TEST__={persistJson,normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
   );
   assert.match(source, /__SEA_AUTH_TEST__/, 'test hook injection failed');
 
@@ -40,6 +40,15 @@ async function loadAuth(search = '') {
   vm.runInContext(source, context, { filename: 'auth.js' });
   return context.__SEA_AUTH_TEST__;
 }
+
+test('browser storage failures are reported without throwing', async () => {
+  const { persistJson } = await loadAuth();
+  let saved = '';
+
+  assert.equal(persistJson({ setItem(key, value) { saved = `${key}:${value}`; } }, 'session', { email: 'learner@example.com' }), true);
+  assert.equal(saved, 'session:{"email":"learner@example.com"}');
+  assert.equal(persistJson({ setItem() { throw new Error('storage blocked'); } }, 'session', { email: 'learner@example.com' }), false);
+});
 
 test('registration replacement guard separates learner emails', async () => {
   const { normalizeEmail, isUsableAccount, registrationConflict } = await loadAuth();
