@@ -21,7 +21,7 @@
 <span class="label">FREE LEARNER SIGN UP</span>
 <h1>Create your learner profile.</h1>
 <p class="lead">Courses and engineering guides remain free to browse publicly. Create this free learner profile to enter the Resources hub, structured technical libraries and downloadable presentation area.</p>
-<div class="existing" id="existingRegistration" hidden><strong>Account found for <span data-existing-name></span>.</strong><p>This browser supports one local learner profile so its progress and records stay separate.</p><button class="btn btn-primary" type="button" data-sea-continue>Sign in & continue →</button></div>
+<div class="existing" id="existingRegistration" role="status" aria-live="polite" aria-atomic="true" hidden><strong>Saved profile found for <span data-existing-name></span>.</strong><p>Continue with this browser-local profile without changing its learning progress or records.</p><button class="btn btn-primary" type="button" data-sea-continue>Continue with saved profile →</button></div>
 <form id="seaRegistrationForm">
 <div class="reg-grid">
 <div class="reg-field"><label for="regName">Full name *</label><input id="regName" name="name" required autocomplete="name" placeholder="Your full name"></div>
@@ -37,6 +37,6 @@
 <div class="reg-note"><strong>Privacy note:</strong> This current GitHub Pages version stores the learner profile only in your browser. It does not send these profile details to an academy server. Secure password login, email verification and cross-device access require the planned production authentication backend.</div>
 </section>
 </main>
-<script src="/auth.js?v=20260824-safe-return"></script>
+<script src="/auth.js?v=20260824-saved-profile"></script>
 </body>
 </html>
