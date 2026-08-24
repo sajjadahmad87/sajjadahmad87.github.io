@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MTBF & MTTR Data Collection Worksheet | Sajjad's Engineering Academy</title>
+  <meta name="description" content="Download a free MTBF and MTTR data collection CSV template with field definitions, delay categories, quality checks, formulas and a practical reliability workflow.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://sajjadengineeringacademy.com/resources/mtbf-mttr-data-collection-worksheet/">
+  <meta property="og:title" content="MTBF & MTTR Data Collection Worksheet">
+  <meta property="og:description" content="A free reliability worksheet for collecting operating hours, qualifying failures and repair-delay evidence before calculating maintenance KPIs.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://sajjadengineeringacademy.com/resources/mtbf-mttr-data-collection-worksheet/">
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../../guide.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"LearningResource","name":"MTBF & MTTR Data Collection Worksheet","description":"A downloadable CSV worksheet and field guide for collecting reliability KPI inputs and repair-delay evidence.","url":"https://sajjadengineeringacademy.com/resources/mtbf-mttr-data-collection-worksheet/","learningResourceType":"Worksheet","educationalLevel":"Intermediate","isAccessibleForFree":true,"inLanguage":"en","provider":{"@type":"Organization","name":"Sajjad's Engineering Academy","url":"https://sajjadengineeringacademy.com/"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://sajjadengineeringacademy.com/"},{"@type":"ListItem","position":2,"name":"MTTR Guide","item":"https://sajjadengineeringacademy.com/guides/mttr/"},{"@type":"ListItem","position":3,"name":"MTBF & MTTR Data Collection Worksheet","item":"https://sajjadengineeringacademy.com/resources/mtbf-mttr-data-collection-worksheet/"}]}</script>
+</head>
+<body class="guide-body">
+<main class="guide-shell">
+  <div class="guide-breadcrumb"><a href="../../">Sajjad's Engineering Academy</a> / <a href="../../guides/mttr/">MTTR Guide</a> / Reliability Worksheet</div>
+  <article>
+    <header class="guide-hero">
+      <span class="guide-kicker">Free Reliability Worksheet</span>
+      <h1>MTBF & MTTR Data Collection Worksheet</h1>
+      <p>Reliable KPIs begin with consistent source records. This blank CSV template helps maintenance teams collect operating exposure, qualifying failures, repair-time boundaries and delay evidence before calculating MTBF, MTTR and simplified inherent availability.</p>
+    </header>
+    <div class="guide-content">
+      <div class="guide-grid">
+        <a class="guide-card" href="../../downloads/reliability/mtbf-mttr-data-collection-template.csv" download><strong>Download the blank CSV template</strong><small>Original academy worksheet with column headings only—no example results, personal data or employer records.</small></a>
+      </div>
+      <div class="guide-note"><strong>Intentional public resource:</strong> this download is an original blank educational template from Sajjad's Engineering Academy. It contains no private learner data, credentials, proprietary manual content, employer asset records or measured performance claims.</div>
+
+      <h2>What the worksheet is designed to capture</h2>
+      <p>The template separates period-level exposure data from individual failure-event evidence. This prevents operating hours from being repeated and accidentally summed once for every failure.</p>
+      <ul>
+        <li><strong>PERIOD_SUMMARY row:</strong> one row for each asset group and reporting period. Enter the reporting dates and total operating hours here. Leave failure-event and repair-stage fields blank.</li>
+        <li><strong>FAILURE row:</strong> one row for each event that meets the agreed qualifying-failure definition. Enter the event timing, failure mode, delay categories and restoration evidence. Leave period operating hours blank.</li>
+      </ul>
+      <p>Use a stable, non-confidential <strong>Asset_Group_ID</strong> and the same reporting dates to connect the summary and event rows. Do not use personal names, access credentials, restricted asset identifiers or confidential work-order narratives.</p>
+
+      <h2>Recommended setup before recording data</h2>
+      <ol>
+        <li><strong>Define the asset population:</strong> one machine, a group of comparable machines or another clearly stated boundary.</li>
+        <li><strong>Define a qualifying failure:</strong> state whether it includes only functional failures, production-stopping breakdowns or another consistent rule.</li>
+        <li><strong>Define operating time:</strong> use actual or consistently defined scheduled running hours; do not alternate between calendar and operating exposure.</li>
+        <li><strong>Define the repair clock:</strong> document the start and stop events and which delay categories remain inside total restoration time.</li>
+        <li><strong>Set the reporting period:</strong> use dates long enough to produce meaningful exposure and retain zero-failure periods instead of discarding them.</li>
+      </ol>
+
+      <h2>Field guide</h2>
+      <h3>Period and event identity</h3>
+      <ul>
+        <li><strong>Record_Type:</strong> enter PERIOD_SUMMARY or FAILURE.</li>
+        <li><strong>Asset_Group_ID:</strong> a consistent generic identifier for the selected asset population.</li>
+        <li><strong>Reporting_Period_Start / End:</strong> the common period used for operating hours and failures.</li>
+        <li><strong>Failure_Event_ID:</strong> a non-confidential unique reference that prevents duplicate counting.</li>
+        <li><strong>Qualifying_Failure_Y_N:</strong> record whether the event meets the agreed definition; calculate failure count from Y events only.</li>
+        <li><strong>Failure_Mode:</strong> a concise functional description, not merely a symptom or replaced part.</li>
+      </ul>
+
+      <h3>Repair-time breakdown</h3>
+      <ul>
+        <li><strong>Response_Hours:</strong> recognition, notification and maintenance response before safe access begins.</li>
+        <li><strong>Safety_Access_Hours:</strong> approved isolation, PTW/LOTO, cooling, draining, depressurization, production release and physical access preparation.</li>
+        <li><strong>Diagnosis_Hours:</strong> evidence gathering, testing, drawing review and confirmation of the failed function.</li>
+        <li><strong>Logistics_Hours:</strong> waiting for approved spares, tools, lifting equipment, contractors or OEM information.</li>
+        <li><strong>Active_Repair_Hours:</strong> removal, correction, installation, adjustment and reassembly.</li>
+        <li><strong>Test_Release_Hours:</strong> inspection, functional testing, safeguards restoration, documentation and operational handback.</li>
+        <li><strong>Total_Included_Restoration_Hours:</strong> the duration between the agreed clock start and stop. It should reconcile with included stage durations.</li>
+      </ul>
+
+      <h3>Action and verification</h3>
+      <ul>
+        <li><strong>Clock_Start_Definition / Clock_Stop_Definition:</strong> record the rule so later reviewers can confirm that periods are comparable.</li>
+        <li><strong>Corrective_Action:</strong> the specific improvement selected after reviewing the dominant verified delay or failure mode.</li>
+        <li><strong>Verification_Method:</strong> how later comparable evidence will show whether the action worked.</li>
+        <li><strong>Reviewer / Review_Date:</strong> optional governance fields; use a role or approved identifier where privacy rules require it.</li>
+        <li><strong>Notes_No_Confidential_Data:</strong> short interpretation notes only. Keep private, personal, security-sensitive and proprietary information out of this public template.</li>
+      </ul>
+
+      <h2>Map the worksheet to the KPI formulas</h2>
+      <div class="guide-note"><strong>MTBF = Period operating hours ÷ Number of qualifying failures</strong><br><strong>MTTR = Total included repair time ÷ Number of completed qualifying repairs</strong><br><strong>Simplified inherent availability = MTBF ÷ (MTBF + MTTR) × 100%</strong></div>
+      <p>Choose either active repair time or total included restoration time for MTTR and label the result clearly. Do not mix definitions between periods. A zero-failure period provides useful exposure evidence but does not produce a finite observed MTBF by simple division; carry the operating hours into a longer observation window rather than inventing a result.</p>
+      <p>After validating the records, enter the period operating hours, qualifying-failure count and chosen total repair hours in the <a href="../../tools/mtbf-mttr-availability-calculator/">MTBF, MTTR &amp; Availability Calculator</a>.</p>
+
+      <h2>Data-quality checks before calculation</h2>
+      <ul>
+        <li>Check that each event ID appears once and belongs to the stated asset group and period.</li>
+        <li>Confirm restored time is later than failure-start time and that units are hours throughout.</li>
+        <li>Reconcile total included restoration time with the delay stages included by your definition.</li>
+        <li>Investigate blank timestamps, negative durations, overlapping events and reopened failures.</li>
+        <li>Confirm incomplete repairs are not counted as completed restoration events.</li>
+        <li>Review whether night-shift, contractor and repeat failures are captured consistently.</li>
+        <li>Retain the failure count and individual durations beside the average so a small sample remains visible.</li>
+      </ul>
+
+      <h2>Interpretation and safety limitations</h2>
+      <p>This worksheet supports education and preliminary reliability analysis. It is not a CMMS replacement, audited business record, competency certificate or basis for declaring equipment safe. A lower MTTR does not prove safer or better maintenance if required controls, permanent repair quality or functional testing were reduced.</p>
+      <div class="guide-note"><strong>Site and OEM data take priority:</strong> approved procedures, OEM manuals, engineering design information, PTW/LOTO, risk assessments, data-governance rules and competent-person review govern real equipment decisions. Never shorten safety or verification steps to improve a KPI.</div>
+
+      <h2>Continue the reliability learning path</h2>
+      <div class="guide-grid">
+        <a class="guide-card" href="../../guides/mttr/"><strong>MTTR Reduction Guide</strong><small>Diagnose repair delays and avoid misleading improvement claims.</small></a>
+        <a class="guide-card" href="../../guides/mtbf/"><strong>MTBF Explained</strong><small>Define operating exposure and qualifying failures consistently.</small></a>
+        <a class="guide-card" href="../../tools/mtbf-mttr-availability-calculator/"><strong>Reliability KPI Calculator</strong><small>Calculate MTBF, MTTR and simplified inherent availability.</small></a>
+        <a class="guide-card" href="../../guides/fmea-maintenance/"><strong>FMEA for Maintenance</strong><small>Prioritize failure modes and improvement actions by risk.</small></a>
+      </div>
+      <a class="guide-home" href="../../guides/">← Back to Engineering Guides</a>
+    </div>
+  </article>
+</main>
+<footer class="guide-footer">Sajjad's Engineering Academy — free practical engineering learning for the real workplace.</footer>
+<script src="/auth.js"></script>
+</body>
+</html>
