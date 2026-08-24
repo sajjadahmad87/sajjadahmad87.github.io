@@ -33,6 +33,7 @@
   };
 
   const registerUrl=(target)=>'/register.html?return='+encodeURIComponent(target||'/resources.html');
+  const accountActionTarget=()=>/\/(?:signin|register)\.html$/.test(location.pathname)?safeReturn():currentTarget();
   const signinUrl=(target,reason)=>{
     const params=new URLSearchParams({return:target||'/resources.html'});
     if(reason) params.set('reason',reason);
@@ -74,7 +75,7 @@
       chip.append(name,out);
       wrap.appendChild(chip);
     }else{
-      const ret=encodeURIComponent(currentTarget());
+      const ret=encodeURIComponent(accountActionTarget());
       const signIn=document.createElement('a');
       signIn.className='sea-account-link sea-signin';
       signIn.href='/signin.html?return='+ret;
@@ -96,6 +97,9 @@
 
   document.addEventListener('DOMContentLoaded',()=>{
     mountAccountUI();
+
+    document.querySelectorAll('[data-sea-register-return]').forEach(el=>{el.href=registerUrl(safeReturn())});
+    document.querySelectorAll('[data-sea-signin-return]').forEach(el=>{el.href=signinUrl(safeReturn())});
 
     document.addEventListener('click',e=>{
       const a=e.target.closest('a[href]');
