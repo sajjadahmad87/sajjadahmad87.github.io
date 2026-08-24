@@ -7,7 +7,7 @@ async function loadAuth(search = '') {
   let source = await readFile(new URL('../auth.js', import.meta.url), 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_AUTH_TEST__={persistJson,normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
+    '\n;globalThis.__SEA_AUTH_TEST__={persistJson,persistRegistration,normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
   );
   assert.match(source, /__SEA_AUTH_TEST__/, 'test hook injection failed');
 
@@ -48,6 +48,43 @@ test('browser storage failures are reported without throwing', async () => {
   assert.equal(persistJson({ setItem(key, value) { saved = `${key}:${value}`; } }, 'session', { email: 'learner@example.com' }), true);
   assert.equal(saved, 'session:{"email":"learner@example.com"}');
   assert.equal(persistJson({ setItem() { throw new Error('storage blocked'); } }, 'session', { email: 'learner@example.com' }), false);
+});
+
+test('registration storage rolls back both learner records after a partial failure', async () => {
+  const { persistRegistration } = await loadAuth();
+  const values = new Map([
+    ['sea_account_v2', JSON.stringify({ email: 'existing@example.com', name: 'Existing learner' })],
+    ['sea_session_v2', JSON.stringify({ email: 'existing@example.com' })]
+  ]);
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) {
+      if(key === 'sea_session_v2' && JSON.parse(value).email === 'new@example.com') throw new Error('storage full');
+      values.set(key, String(value));
+    },
+    removeItem(key) { values.delete(key); }
+  };
+
+  assert.equal(persistRegistration(storage, { email: 'new@example.com' }, { email: 'new@example.com' }), false);
+  assert.deepEqual(JSON.parse(values.get('sea_account_v2')), { email: 'existing@example.com', name: 'Existing learner' });
+  assert.deepEqual(JSON.parse(values.get('sea_session_v2')), { email: 'existing@example.com' });
+});
+
+test('failed first-time registration removes a partially saved profile', async () => {
+  const { persistRegistration } = await loadAuth();
+  const values = new Map();
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) {
+      if(key === 'sea_session_v2') throw new Error('storage full');
+      values.set(key, String(value));
+    },
+    removeItem(key) { values.delete(key); }
+  };
+
+  assert.equal(persistRegistration(storage, { email: 'new@example.com' }, { email: 'new@example.com' }), false);
+  assert.equal(values.has('sea_account_v2'), false);
+  assert.equal(values.has('sea_session_v2'), false);
 });
 
 test('registration replacement guard separates learner emails', async () => {
