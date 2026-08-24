@@ -191,5 +191,5 @@
     }
   });
 
-  document.addEventListener('DOMContentLoaded',render);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
 })();
