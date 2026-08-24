@@ -7,6 +7,7 @@ on:
       - 'auth.js'
       - 'register.html'
       - 'lms-import.js'
+      - 'lms.js'
       - 'lms-logbook.js'
       - 'lms-course-notes.js'
       - 'lms-quiz.js'
@@ -18,6 +19,7 @@ on:
       - 'tests/lms-logbook-recovery.test.mjs'
       - 'tests/lms-course-notes.test.mjs'
       - 'tests/lms-quiz.test.mjs'
+      - 'tests/lms-course-progression.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   pull_request:
     branches: [main]
@@ -25,6 +27,7 @@ on:
       - 'auth.js'
       - 'register.html'
       - 'lms-import.js'
+      - 'lms.js'
       - 'lms-logbook.js'
       - 'lms-course-notes.js'
       - 'lms-quiz.js'
@@ -36,6 +39,7 @@ on:
       - 'tests/lms-logbook-recovery.test.mjs'
       - 'tests/lms-course-notes.test.mjs'
       - 'tests/lms-quiz.test.mjs'
+      - 'tests/lms-course-progression.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   workflow_dispatch:
 
