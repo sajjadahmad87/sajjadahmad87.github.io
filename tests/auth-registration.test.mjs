@@ -7,7 +7,7 @@ async function loadAuth(search = '') {
   let source = await readFile(new URL('../auth.js', import.meta.url), 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
+    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
   );
   assert.match(source, /__SEA_AUTH_TEST__/, 'test hook injection failed');
 
@@ -42,10 +42,14 @@ async function loadAuth(search = '') {
 }
 
 test('registration replacement guard separates learner emails', async () => {
-  const { normalizeEmail, registrationConflict } = await loadAuth();
+  const { normalizeEmail, isUsableAccount, registrationConflict } = await loadAuth();
   const existing = { email: ' Learner@Example.com ' };
 
   assert.equal(normalizeEmail(existing.email), 'learner@example.com');
+  assert.equal(isUsableAccount(existing), true);
+  assert.equal(isUsableAccount({ email: '   ' }), false);
+  assert.equal(isUsableAccount({ name: 'Incomplete learner' }), false);
+  assert.equal(isUsableAccount(null), false);
   assert.equal(registrationConflict(existing, { email: 'learner@example.com' }), false);
   assert.equal(registrationConflict(existing, { email: 'different@example.com' }), true);
   assert.equal(registrationConflict(null, { email: 'new@example.com' }), false);
