@@ -77,3 +77,26 @@ test('progress counts only known modules with boolean completion', async () => {
   assert.equal(completedModuleCount(state, courseId), 4);
   assert.equal(progressPercent(state, courseId), 100);
 });
+
+test('LMS state persistence records the update only after storage accepts it', async () => {
+  const { persistState } = await loadLms();
+  const writes = new Map();
+  const storage = { setItem(key, value) { writes.set(key, value); } };
+  const state = { enrolled: {}, updatedAt: 'earlier' };
+
+  assert.equal(persistState(storage, state, '2026-08-24T12:00:00.000Z'), true);
+  assert.equal(state.updatedAt, '2026-08-24T12:00:00.000Z');
+  assert.deepEqual(JSON.parse(writes.get('sea_lms_state_v1')), state);
+});
+
+test('failed LMS persistence restores state metadata for safe UI rollback', async () => {
+  const { persistState } = await loadLms();
+  const storage = { setItem() { throw new Error('storage unavailable'); } };
+  const state = { enrolled: {}, updatedAt: 'previous-update' };
+  const stateWithoutTimestamp = { enrolled: {} };
+
+  assert.equal(persistState(storage, state, 'failed-update'), false);
+  assert.equal(state.updatedAt, 'previous-update');
+  assert.equal(persistState(storage, stateWithoutTimestamp, 'failed-update'), false);
+  assert.equal(Object.hasOwn(stateWithoutTimestamp, 'updatedAt'), false);
+});
