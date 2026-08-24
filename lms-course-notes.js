@@ -128,13 +128,14 @@
     const main=document.querySelector('[data-lms-dashboard]');
     if(!main||document.querySelector('[data-lms-study-notes-summary]'))return;
     const learning=document.querySelector('#learning');
-    const panel=document.createElement('section');panel.className='panel';panel.id='study-notes';panel.dataset.lmsStudyNotesSummary='';
+    const existingPanel=document.getElementById('study-notes');
+    const panel=existingPanel||document.createElement('section');panel.className='panel';panel.id='study-notes';panel.dataset.lmsStudyNotesSummary='';
     const entries=Object.entries(read()).filter(([,v])=>v&&String(v.text||'').trim()).sort((a,b)=>new Date(b[1].updatedAt||0)-new Date(a[1].updatedAt||0));
     const categories=[...new Set(entries.map(([id])=>courseCategory(id)))].sort();
     const rows=entries.length?entries.map(([id,v])=>{const text=String(v.text||'').replace(/\s+/g,' ').trim(),snippet=text.length>150?text.slice(0,147)+'…':text,title=courseTitle(id),category=courseCategory(id),search=(title+' '+category+' '+text).toLowerCase();return `<div class="lms-item" data-lms-note-row data-note-category="${esc(category)}" data-note-search="${esc(search)}"><div class="lms-item-icon">NOTE</div><div><h3>${esc(title)}</h3><p>${esc(snippet)}</p><small>${esc(category)} · ${v.updatedAt?'Last saved '+formatWhen(v.updatedAt):'Saved locally'}<span data-lms-note-review-status>${v.needsReview?' · Revision queued':''}</span></small></div><div class="lms-note-row-actions"><a class="btn btn-secondary" href="${courseHref(id)}">Open course</a>${v.needsReview?`<button class="btn btn-secondary" type="button" data-lms-note-reviewed data-note-id="${esc(id)}">Mark reviewed</button>`:''}</div></div>`}).join(''):'<p class="lms-local-note">No course-specific study notes saved yet. Open the course catalog or a supported course and use “Study note” to record key learning takeaways.</p>';
     const categoryOptions=categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
     panel.innerHTML=`<h2>Course study notes</h2><p class="lms-local-note">Personal browser-local notes are included in the complete learner backup. Search notes by course, topic or note text, and keep entries educational and non-confidential.</p>${entries.length?`<div class="catalog-tools" style="grid-template-columns:minmax(0,1fr) minmax(180px,240px);margin-bottom:10px"><input type="search" data-lms-note-search aria-label="Search saved study notes" placeholder="Search notes, courses or topics…"><select data-lms-note-category aria-label="Filter study notes by learning area"><option value="">All learning areas</option>${categoryOptions}</select></div><p class="lms-local-note" data-lms-note-results aria-live="polite">${entries.length} saved ${entries.length===1?'note':'notes'}</p>`:''}<div class="lms-list" data-lms-note-list>${rows}</div>${entries.length?'<p class="lms-local-note" data-lms-note-empty hidden>No saved notes match the current search and learning-area filter.</p>':''}`;
-    if(learning)learning.insertAdjacentElement('beforebegin',panel);else main.appendChild(panel);
+    if(!existingPanel){if(learning)learning.insertAdjacentElement('beforebegin',panel);else main.appendChild(panel)}
     const nav=document.querySelector('.side-nav');if(nav&&!nav.querySelector('a[href="#study-notes"]')){const a=document.createElement('a');a.href='#study-notes';a.textContent='Study Notes';const learningLink=nav.querySelector('a[href="#learning"]');if(learningLink)learningLink.insertAdjacentElement('beforebegin',a);else nav.appendChild(a)};
     panel.addEventListener('click',event=>{
       const button=event.target.closest('[data-lms-note-reviewed]');
@@ -158,6 +159,7 @@
       };
       searchInput.addEventListener('input',applyFilters);categorySelect.addEventListener('change',applyFilters);
     }
+    if(!document.querySelector('script[data-lms-note-review-loader]')){const script=document.createElement('script');script.src='/lms-note-review.js';script.async=true;script.dataset.lmsNoteReviewLoader='';document.body.appendChild(script)}
   };
 
   const init=()=>{mountCourseNotes();mountCatalogNotes();mountDashboard()};
