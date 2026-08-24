@@ -27,7 +27,20 @@ class StorageMock {
 
 async function loadRecovery({ initial = {}, failKey = '', confirmResult = true } = {}) {
   const localStorage = new StorageMock(initial, failKey);
-  const live = { textContent: '' };
+  const attributes = new Map();
+  const classes = new Set();
+  let focuses = 0;
+  const live = {
+    textContent: '',
+    classList: {
+      toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); },
+      contains(name) { return classes.has(name); }
+    },
+    setAttribute(name, value) { attributes.set(name, String(value)); },
+    removeAttribute(name) { attributes.delete(name); },
+    getAttribute(name) { return attributes.get(name) ?? null; },
+    focus() { focuses += 1; }
+  };
   let reloads = 0;
   let confirms = 0;
   let source = await readFile(sourcePath, 'utf8');
@@ -55,6 +68,7 @@ async function loadRecovery({ initial = {}, failKey = '', confirmResult = true }
     ...context.__SEA_RECOVERY_TEST__,
     localStorage,
     live,
+    get focuses() { return focuses; },
     get reloads() { return reloads; },
     get confirms() { return confirms; }
   };
@@ -124,6 +138,11 @@ test('blocks a backup belonging to another signed-in learner', async () => {
   assert.equal(harness.restoreComplete(payload, harness.validateComplete(payload)), false);
   assert.equal(harness.confirms, 0);
   assert.match(harness.live.textContent, /different learner account/i);
+  assert.equal(harness.live.classList.contains('lms-live-error'), true);
+  assert.equal(harness.live.getAttribute('role'), 'alert');
+  assert.equal(harness.live.getAttribute('aria-live'), 'assertive');
+  assert.equal(harness.live.getAttribute('tabindex'), '-1');
+  assert.equal(harness.focuses, 1);
 });
 
 
