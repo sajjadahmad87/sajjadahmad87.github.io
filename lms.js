@@ -20,6 +20,9 @@
     {id:'waterside',title:'Water-side Troubleshooting',note:'Flow, valve, temperature and system-performance reasoning.',href:'/course.html#module-waterside'},
     {id:'controls-rca',title:'Controls, Sensors & RCA',note:'Validate controls evidence and convert findings into corrective actions.',href:'/guides/root-cause-analysis-5-why/'}
   ];
+  const COURSE_MODULE_IDS={
+    'industrial-hvac-troubleshooting':HVAC_MODULES.map(module=>module.id)
+  };
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
@@ -50,12 +53,16 @@
     if(!state.progress[courseId].modules) state.progress[courseId].modules={};
     return state.progress[courseId];
   };
+  const completedModuleCount=(state,courseId)=>{
+    const moduleIds=COURSE_MODULE_IDS[courseId]||[];
+    if(!moduleIds.length) return 0;
+    const modules=ensureProgress(state,courseId).modules;
+    return moduleIds.filter(moduleId=>modules[moduleId]===true).length;
+  };
   const progressPercent=(state,courseId)=>{
     const meta=COURSES[courseId];
     if(!meta?.modules) return 0;
-    const p=ensureProgress(state,courseId);
-    const done=Object.values(p.modules).filter(Boolean).length;
-    return Math.round(done/meta.modules*100);
+    return Math.min(100,Math.max(0,Math.round(completedModuleCount(state,courseId)/meta.modules*100)));
   };
   const enroll=(courseId)=>{
     if(!signedIn()){loginForCurrent();return false}
@@ -82,12 +89,14 @@
     addActivity(state,'opened',courseId,'Opened '+COURSES[courseId].title);saveState(state);
   };
   const setModule=(courseId,moduleId,done)=>{
+    const module=HVAC_MODULES.find(item=>item.id===moduleId);
+    if(!(COURSE_MODULE_IDS[courseId]||[]).includes(moduleId)||!module)return;
     if(!signedIn()){loginForCurrent();return}
     const state=getState();if(!state.enrolled[courseId]) state.enrolled[courseId]={enrolledAt:new Date().toISOString()};
     const p=ensureProgress(state,courseId);p.modules[moduleId]=!!done;p.updatedAt=new Date().toISOString();
     state.enrolled[courseId].lastOpenedAt=new Date().toISOString();
-    addActivity(state,done?'module-complete':'module-reopened',courseId,(done?'Completed ':'Reopened ')+(HVAC_MODULES.find(x=>x.id===moduleId)?.title||moduleId));
-    saveState(state);renderCourseProgress();announce((done?'Completed ':'Reopened ')+(HVAC_MODULES.find(x=>x.id===moduleId)?.title||'module'));
+    addActivity(state,done?'module-complete':'module-reopened',courseId,(done?'Completed ':'Reopened ')+module.title);
+    saveState(state);renderCourseProgress();announce((done?'Completed ':'Reopened ')+module.title);
   };
   const formatDate=(iso)=>{if(!iso)return '—';try{return new Intl.DateTimeFormat('en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso))}catch{return iso}};
   const esc=(s)=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -156,7 +165,7 @@
     const a=account();const state=getState();
     const enrolledIds=Object.keys(state.enrolled).filter(id=>COURSES[id]);
     const savedIds=state.saved.filter(id=>COURSES[id]);
-    const totalCompleted=Object.keys(state.progress).reduce((n,id)=>n+Object.values(ensureProgress(state,id).modules).filter(Boolean).length,0);
+    const totalCompleted=Object.keys(COURSES).reduce((n,id)=>n+completedModuleCount(state,id),0);
     const initials=(a?.name||a?.email||'Learner').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
     document.querySelectorAll('[data-lms-name]').forEach(el=>el.textContent=a?.name||'Learner');
     document.querySelectorAll('[data-lms-avatar]').forEach(el=>el.textContent=initials||'LR');
@@ -202,5 +211,5 @@
     const courseId=document.body.dataset.lmsCourse;if(courseId)touchCourse(courseId);
   });
 
-  window.SEALMS={getState,enroll,toggleSaved,progressPercent,dashboardCourseStatus};
+  window.SEALMS={getState,enroll,toggleSaved,completedModuleCount,progressPercent,dashboardCourseStatus};
 })();
