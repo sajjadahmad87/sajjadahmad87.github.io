@@ -33,7 +33,11 @@
   };
 
   const registerUrl=(target)=>'/register.html?return='+encodeURIComponent(target||'/resources.html');
-  const signinUrl=(target)=>'/signin.html?return='+encodeURIComponent(target||'/resources.html');
+  const signinUrl=(target,reason)=>{
+    const params=new URLSearchParams({return:target||'/resources.html'});
+    if(reason) params.set('reason',reason);
+    return '/signin.html?'+params.toString();
+  };
   const isProtectedHref=(href)=>{
     try{
       const u=new URL(href,location.href);
@@ -43,7 +47,7 @@
   };
 
   if(requiresAuth&&!getUser()){
-    location.replace(signinUrl(currentTarget()));
+    location.replace(signinUrl(currentTarget(),'protected-page'));
     return;
   }
 
@@ -65,7 +69,7 @@
       out.addEventListener('click',()=>{
         localStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(LEGACY_KEY);
-        location.href='/signin.html?return='+encodeURIComponent(currentTarget());
+        location.href=signinUrl(currentTarget(),'signed-out');
       });
       chip.append(name,out);
       wrap.appendChild(chip);
@@ -98,7 +102,7 @@
       if(!a||getUser()||!isProtectedHref(a.href)) return;
       e.preventDefault();
       const u=new URL(a.href,location.href);
-      location.href=signinUrl(u.pathname+u.search+u.hash);
+      location.href=signinUrl(u.pathname+u.search+u.hash,'protected-resource');
     });
 
     const registrationForm=document.getElementById('seaRegistrationForm');
@@ -142,7 +146,18 @@
       const account=getAccount();
       const error=document.getElementById('signinError');
       const emailInput=signinForm.querySelector('[name=email]');
+      const recovery=document.getElementById('signinRecovery');
+      const reason=new URLSearchParams(location.search).get('reason');
       if(account?.email&&emailInput) emailInput.value=account.email;
+      if(recovery&&reason){
+        const messages={
+          'protected-page':'Sign in is required to open this learner page. If you were previously signed in, your browser-local session is no longer available.',
+          'protected-resource':'Sign in is required to open this learner resource.',
+          'signed-out':'You have signed out successfully. Sign in again whenever you are ready to continue learning.'
+        };
+        if(messages[reason]){recovery.hidden=false;recovery.textContent=messages[reason]}
+      }
+      if(emailInput) emailInput.focus();
       signinForm.addEventListener('submit',e=>{
         e.preventDefault();
         const email=String(new FormData(signinForm).get('email')||'').trim().toLowerCase();
@@ -152,6 +167,7 @@
         }else if(error){
           error.hidden=false;
           error.textContent='No saved registration was found for this email on this browser. Please sign up first.';
+          error.focus();
         }
       });
     }
