@@ -7,7 +7,7 @@ async function loadAuth() {
   let source = await readFile(new URL('../auth.js', import.meta.url), 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,registrationConflict};\n})();\n'
+    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,registrationConflict,signinUrl};\n})();\n'
   );
   assert.match(source, /__SEA_AUTH_TEST__/, 'test hook injection failed');
 
@@ -50,4 +50,17 @@ test('registration replacement guard separates learner emails', async () => {
   assert.equal(registrationConflict(existing, { email: 'different@example.com' }), true);
   assert.equal(registrationConflict(null, { email: 'new@example.com' }), false);
   assert.equal(registrationConflict(existing, { email: '' }), false);
+});
+
+test('sign-in recovery URL preserves the safe return target and reason', async () => {
+  const { signinUrl } = await loadAuth();
+
+  assert.equal(
+    signinUrl('/student-dashboard.html#quiz', 'protected-page'),
+    '/signin.html?return=%2Fstudent-dashboard.html%23quiz&reason=protected-page'
+  );
+  assert.equal(
+    signinUrl('/resources.html', ''),
+    '/signin.html?return=%2Fresources.html'
+  );
 });
