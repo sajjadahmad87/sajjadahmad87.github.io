@@ -33,6 +33,23 @@
       return false;
     }
   };
+  const clearAuthSession=(storage)=>{
+    let previousSession=null, previousLegacy=null, snapshotsReady=false;
+    try{
+      previousSession=storage.getItem(SESSION_KEY);
+      previousLegacy=storage.getItem(LEGACY_KEY);
+      snapshotsReady=true;
+      storage.removeItem(SESSION_KEY);
+      storage.removeItem(LEGACY_KEY);
+      return true;
+    }catch{
+      if(snapshotsReady){
+        try{restoreStoredValue(storage,SESSION_KEY,previousSession)}catch{}
+        try{restoreStoredValue(storage,LEGACY_KEY,previousLegacy)}catch{}
+      }
+      return false;
+    }
+  };
   const normalizeEmail=(value)=>String(value||'').trim().toLowerCase();
   const isUsableAccount=(account)=>!!normalizeEmail(account?.email);
   const registrationConflict=(existing,profile)=>!!(normalizeEmail(existing?.email)&&normalizeEmail(profile?.email)&&normalizeEmail(existing.email)!==normalizeEmail(profile.email));
@@ -105,8 +122,20 @@
       out.className='sea-signout';
       out.textContent='Sign Out';
       out.addEventListener('click',()=>{
-        localStorage.removeItem(SESSION_KEY);
-        localStorage.removeItem(LEGACY_KEY);
+        if(!clearAuthSession(localStorage)){
+          let error=wrap.querySelector('.sea-account-error');
+          if(!error){
+            error=document.createElement('p');
+            error.className='sea-account-error';
+            error.setAttribute('role','alert');
+            error.tabIndex=-1;
+            error.style.cssText='max-width:260px;margin:0;padding:8px 10px;border:1px solid rgba(255,120,120,.35);border-radius:8px;background:#351a20;color:#ffd1d1;font:12px/1.4 system-ui,sans-serif;white-space:normal';
+            wrap.appendChild(error);
+          }
+          error.textContent='Sign out could not be completed because browser storage is unavailable. Your learner session remains active.';
+          error.focus();
+          return;
+        }
         location.href=signinUrl(currentTarget(),'signed-out');
       });
       chip.append(name,out);
