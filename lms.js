@@ -56,6 +56,9 @@
       return false;
     }
   };
+  const resetLearningState=(storage)=>{
+    try{storage.removeItem(LMS_KEY);return storage.getItem(LMS_KEY)==null}catch{return false}
+  };
   const saveState=(state)=>{const saved=persistState(localStorage,state);if(!saved)announceSaveError();return saved};
   const loginForCurrent=()=>{
     const target=location.pathname+location.search+location.hash;
@@ -162,7 +165,7 @@
         return;
       }
       const reset=e.target.closest('[data-lms-reset]');
-      if(reset&&confirm('Reset saved courses, enrolments, module progress and local learning history on this browser? Your learner account will remain.')){localStorage.removeItem(LMS_KEY);announce('Local learning progress reset');renderDashboard();renderCourseProgress();document.querySelectorAll('[data-lms-save]').forEach(b=>{b.setAttribute('aria-pressed','false');b.textContent='Save ☆'});document.querySelectorAll('[data-lms-enroll]').forEach(b=>b.textContent='Enrol free')}
+      if(reset&&confirm('Reset saved courses, enrolments, module progress and course activity on this browser? Quiz attempts, study notes, practical logbook entries, goals and your learner account will remain. This cannot be undone unless you have a backup.')){if(!resetLearningState(localStorage)){announceSaveError();return}announce('Local course progress reset');renderDashboard();renderCourseProgress();document.querySelectorAll('[data-lms-save]').forEach(b=>{b.setAttribute('aria-pressed','false');b.textContent='Save ☆'});document.querySelectorAll('[data-lms-enroll]').forEach(b=>b.textContent='Enrol free')}
     });
   };
   const renderCourseProgress=()=>{
@@ -229,5 +232,5 @@
     const courseId=document.body.dataset.lmsCourse;if(courseId)touchCourse(courseId);
   });
 
-  window.SEALMS={getState,enroll,toggleSaved,completedModuleCount,progressPercent,dashboardCourseStatus,persistState};
+  window.SEALMS={getState,enroll,toggleSaved,completedModuleCount,progressPercent,dashboardCourseStatus,persistState,resetLearningState};
 })();
