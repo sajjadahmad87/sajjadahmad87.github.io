@@ -46,3 +46,34 @@ test('unfinished and untracked paths retain continue-learning guidance', async (
   assert.equal(untracked.summary, 'Learning path');
   assert.equal(untracked.resumeHref, '/guides/topic/');
 });
+
+test('progress counts only known modules with boolean completion', async () => {
+  const { completedModuleCount, progressPercent } = await loadLms();
+  const courseId = 'industrial-hvac-troubleshooting';
+  const state = {
+    progress: {
+      [courseId]: {
+        modules: {
+          fundamentals: true,
+          airside: false,
+          waterside: 'true',
+          'controls-rca': null,
+          'unknown-legacy-module': true
+        }
+      }
+    }
+  };
+
+  assert.equal(completedModuleCount(state, courseId), 1);
+  assert.equal(progressPercent(state, courseId), 25);
+
+  state.progress[courseId].modules = {
+    fundamentals: true,
+    airside: true,
+    waterside: true,
+    'controls-rca': true,
+    'unknown-legacy-module': true
+  };
+  assert.equal(completedModuleCount(state, courseId), 4);
+  assert.equal(progressPercent(state, courseId), 100);
+});
