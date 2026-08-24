@@ -14,9 +14,14 @@
   const currentTarget=()=>location.pathname+location.search+location.hash;
   const safeReturn=()=>{
     const params=new URLSearchParams(location.search);
-    let target=params.get('return')||'/resources.html';
-    if(!target.startsWith('/')||target.startsWith('//')) target='/resources.html';
-    return target;
+    const fallback='/resources.html';
+    const target=params.get('return')||fallback;
+    try{
+      if(!target.startsWith('/')||target.startsWith('//')||target.includes('\\')) return fallback;
+      const resolved=new URL(target,location.origin);
+      if(resolved.origin!==location.origin||/\/(?:signin|register)\.html$/.test(resolved.pathname)) return fallback;
+      return resolved.pathname+resolved.search+resolved.hash;
+    }catch{return fallback}
   };
 
   // Migrate the original registration into the new account/session model.
