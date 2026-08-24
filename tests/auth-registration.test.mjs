@@ -3,11 +3,11 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
 
-async function loadAuth() {
+async function loadAuth(search = '') {
   let source = await readFile(new URL('../auth.js', import.meta.url), 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,registrationConflict,signinUrl,registerUrl,accountActionTarget};\n})();\n'
+    '\n;globalThis.__SEA_AUTH_TEST__={normalizeEmail,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
   );
   assert.match(source, /__SEA_AUTH_TEST__/, 'test hook injection failed');
 
@@ -28,7 +28,7 @@ async function loadAuth() {
     },
     location: {
       pathname: '/register.html',
-      search: '',
+      search,
       hash: '',
       href: '',
       origin: 'https://sajjadengineeringacademy.com',
@@ -73,4 +73,26 @@ test('account recovery actions avoid nesting the authentication page', async () 
     registerUrl('/student-dashboard.html#quiz'),
     '/register.html?return=%2Fstudent-dashboard.html%23quiz'
   );
+});
+
+test('return routing accepts only same-site non-authentication destinations', async () => {
+  const accepted = await loadAuth(
+    '?return=%2Fstudent-dashboard.html%3Fsection%3Dquiz%23latest'
+  );
+  assert.equal(
+    accepted.safeReturn(),
+    '/student-dashboard.html?section=quiz#latest'
+  );
+
+  const rejected = [
+    '?return=https%3A%2F%2Fevil.example%2Fphish',
+    '?return=%2F%2Fevil.example%2Fphish',
+    '?return=%2F%5Cevil.example%2Fphish',
+    '?return=%2Fsignin.html',
+    '?return=%2Fregister.html'
+  ];
+  for (const search of rejected) {
+    const { safeReturn } = await loadAuth(search);
+    assert.equal(safeReturn(), '/resources.html', search);
+  }
 });
