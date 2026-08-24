@@ -12,6 +12,27 @@
     try{storage.setItem(key,JSON.stringify(value));return true}catch{return false}
   };
   const write=(key,value)=>persistJson(localStorage,key,value);
+  const restoreStoredValue=(storage,key,value)=>{
+    if(value===null) storage.removeItem(key);
+    else storage.setItem(key,value);
+  };
+  const persistRegistration=(storage,profile,session)=>{
+    let previousAccount=null, previousSession=null, snapshotsReady=false;
+    try{
+      previousAccount=storage.getItem(ACCOUNT_KEY);
+      previousSession=storage.getItem(SESSION_KEY);
+      snapshotsReady=true;
+      storage.setItem(ACCOUNT_KEY,JSON.stringify(profile));
+      storage.setItem(SESSION_KEY,JSON.stringify(session));
+      return true;
+    }catch{
+      if(snapshotsReady){
+        try{restoreStoredValue(storage,ACCOUNT_KEY,previousAccount)}catch{}
+        try{restoreStoredValue(storage,SESSION_KEY,previousSession)}catch{}
+      }
+      return false;
+    }
+  };
   const normalizeEmail=(value)=>String(value||'').trim().toLowerCase();
   const isUsableAccount=(account)=>!!normalizeEmail(account?.email);
   const registrationConflict=(existing,profile)=>!!(normalizeEmail(existing?.email)&&normalizeEmail(profile?.email)&&normalizeEmail(existing.email)!==normalizeEmail(profile.email));
@@ -149,9 +170,8 @@
           showAuthError('registrationError','This browser already stores a learner profile and LMS records for another email. To prevent learner data from being mixed or overwritten, sign in with the existing profile or use a separate browser profile for another learner.');
           return;
         }
-        const accountSaved=write(ACCOUNT_KEY,profile);
-        const sessionSaved=accountSaved&&write(SESSION_KEY,{email:profile.email,signedInAt:new Date().toISOString()});
-        if(!sessionSaved){
+        const session={email:profile.email,signedInAt:new Date().toISOString()};
+        if(!persistRegistration(localStorage,profile,session)){
           showAuthError('registrationError','Your browser could not complete learner profile saving or sign-in. Check that browser storage is available, then try again.');
           return;
         }
