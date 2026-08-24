@@ -8,10 +8,20 @@
   const requiresAuth=script?.hasAttribute('data-protect');
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
-  const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
+  const persistJson=(storage,key,value)=>{
+    try{storage.setItem(key,JSON.stringify(value));return true}catch{return false}
+  };
+  const write=(key,value)=>persistJson(localStorage,key,value);
   const normalizeEmail=(value)=>String(value||'').trim().toLowerCase();
   const isUsableAccount=(account)=>!!normalizeEmail(account?.email);
   const registrationConflict=(existing,profile)=>!!(normalizeEmail(existing?.email)&&normalizeEmail(profile?.email)&&normalizeEmail(existing.email)!==normalizeEmail(profile.email));
+  const showAuthError=(id,message)=>{
+    const error=document.getElementById(id);
+    if(!error) return;
+    error.hidden=false;
+    error.textContent=message;
+    error.focus();
+  };
   const currentTarget=()=>location.pathname+location.search+location.hash;
   const safeReturn=()=>{
     const params=new URLSearchParams(location.search);
@@ -136,17 +146,16 @@
         };
         if(!profile.name||!profile.email) return;
         if(registrationConflict(existing,profile)){
-          const error=document.getElementById('registrationError');
-          if(error){
-            error.hidden=false;
-            error.textContent='This browser already stores a learner profile and LMS records for another email. To prevent learner data from being mixed or overwritten, sign in with the existing profile or use a separate browser profile for another learner.';
-            error.focus();
-          }
+          showAuthError('registrationError','This browser already stores a learner profile and LMS records for another email. To prevent learner data from being mixed or overwritten, sign in with the existing profile or use a separate browser profile for another learner.');
           return;
         }
-        write(ACCOUNT_KEY,profile);
-        write(SESSION_KEY,{email:profile.email,signedInAt:new Date().toISOString()});
-        localStorage.removeItem(LEGACY_KEY);
+        const accountSaved=write(ACCOUNT_KEY,profile);
+        const sessionSaved=accountSaved&&write(SESSION_KEY,{email:profile.email,signedInAt:new Date().toISOString()});
+        if(!sessionSaved){
+          showAuthError('registrationError','Your browser could not complete learner profile saving or sign-in. Check that browser storage is available, then try again.');
+          return;
+        }
+        try{localStorage.removeItem(LEGACY_KEY)}catch{}
         location.href=safeReturn();
       });
     }
@@ -172,7 +181,10 @@
         e.preventDefault();
         const email=String(new FormData(signinForm).get('email')||'').trim().toLowerCase();
         if(account&&email===String(account.email||'').toLowerCase()){
-          write(SESSION_KEY,{email:account.email,signedInAt:new Date().toISOString()});
+          if(!write(SESSION_KEY,{email:account.email,signedInAt:new Date().toISOString()})){
+            showAuthError('signinError','Your browser could not save the sign-in session. Check that browser storage is available, then try again.');
+            return;
+          }
           location.href=safeReturn();
         }else if(error){
           error.hidden=false;
@@ -185,7 +197,10 @@
     document.querySelectorAll('[data-sea-continue]').forEach(el=>el.addEventListener('click',()=>{
       const account=getAccount();
       if(!isUsableAccount(account)) return;
-      write(SESSION_KEY,{email:account.email,signedInAt:new Date().toISOString()});
+      if(!write(SESSION_KEY,{email:account.email,signedInAt:new Date().toISOString()})){
+        showAuthError('registrationError','Your browser could not save the sign-in session. Check that browser storage is available, then try again.');
+        return;
+      }
       location.href=safeReturn();
     }));
   });
