@@ -147,3 +147,12 @@ test('rejects duplicate IDs and malformed timestamps without changing current en
   assert.deepEqual(JSON.parse(harness.localStorage.getItem(LOG_KEY)), current);
   assert.match(harness.live.textContent, /invalid timestamp/i);
 });
+
+test('dashboard loads the practical logbook only when its section is needed', async () => {
+  const dashboard = await readFile(new URL('../student-dashboard.html', import.meta.url), 'utf8');
+  const navigation = await readFile(new URL('../lms-dashboard-nav.js', import.meta.url), 'utf8');
+
+  assert.doesNotMatch(dashboard, /<script[^>]+src="lms-logbook\.js/);
+  assert.match(navigation, /\{id:'logbook',src:'\/lms-logbook\.js\?v=20260824-lazy'\}/);
+  assert.match(dashboard, /<section class="panel" id="logbook">/);
+});
