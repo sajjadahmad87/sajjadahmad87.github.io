@@ -7,7 +7,7 @@ async function loadAuth(search = '') {
   let source = await readFile(new URL('../auth.js', import.meta.url), 'utf8');
   source = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_AUTH_TEST__={persistJson,persistRegistration,normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
+    '\n;globalThis.__SEA_AUTH_TEST__={persistJson,persistRegistration,clearAuthSession,normalizeEmail,isUsableAccount,registrationConflict,signinUrl,registerUrl,accountActionTarget,safeReturn};\n})();\n'
   );
   assert.match(source, /__SEA_AUTH_TEST__/, 'test hook injection failed');
 
@@ -85,6 +85,43 @@ test('failed first-time registration removes a partially saved profile', async (
   assert.equal(persistRegistration(storage, { email: 'new@example.com' }, { email: 'new@example.com' }), false);
   assert.equal(values.has('sea_account_v2'), false);
   assert.equal(values.has('sea_session_v2'), false);
+});
+
+test('sign out removes current and legacy sessions together', async () => {
+  const { clearAuthSession } = await loadAuth();
+  const values = new Map([
+    ['sea_session_v2', 'current-session'],
+    ['sea_registered_user_v1', 'legacy-session']
+  ]);
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) { values.set(key, String(value)); },
+    removeItem(key) { values.delete(key); }
+  };
+
+  assert.equal(clearAuthSession(storage), true);
+  assert.equal(values.has('sea_session_v2'), false);
+  assert.equal(values.has('sea_registered_user_v1'), false);
+});
+
+test('failed sign out restores the previous session state', async () => {
+  const { clearAuthSession } = await loadAuth();
+  const values = new Map([
+    ['sea_session_v2', 'current-session'],
+    ['sea_registered_user_v1', 'legacy-session']
+  ]);
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) { values.set(key, String(value)); },
+    removeItem(key) {
+      if(key === 'sea_registered_user_v1') throw new Error('storage blocked');
+      values.delete(key);
+    }
+  };
+
+  assert.equal(clearAuthSession(storage), false);
+  assert.equal(values.get('sea_session_v2'), 'current-session');
+  assert.equal(values.get('sea_registered_user_v1'), 'legacy-session');
 });
 
 test('registration replacement guard separates learner emails', async () => {
