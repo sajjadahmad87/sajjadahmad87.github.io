@@ -92,6 +92,17 @@
   const formatDate=(iso)=>{if(!iso)return '—';try{return new Intl.DateTimeFormat('en',{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso))}catch{return iso}};
   const esc=(s)=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const progressBar=(meta,pct)=>meta.modules?`<div class="lms-progress-bar" style="margin-top:8px" role="progressbar" aria-label="${esc(meta.title)} module progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>`:'';
+  const dashboardCourseStatus=(meta,pct)=>{
+    const complete=!!meta.modules&&pct>=100;
+    return {
+      complete,
+      heading:complete?'Course milestones complete':'Continue learning',
+      summary:meta.modules?(complete?`All ${meta.modules} module milestones reviewed`:`${pct}% module progress`):'Learning path',
+      resumeLabel:complete?'Choose next path':'Resume',
+      resumeHref:complete?'/courses.html':meta.href,
+      listLabel:complete?'Review':'Continue'
+    };
+  };
 
   const enhanceCatalog=()=>{
     const state=getState();
@@ -166,13 +177,14 @@
     }
     if(resume){
       if(sortedEnrolled.length){
-        const id=sortedEnrolled[0],m=COURSES[id],pct=progressPercent(state,id),last=state.enrolled[id].lastOpenedAt||state.enrolled[id].enrolledAt;
-        resume.innerHTML=`<h2>Continue learning</h2><div class="lms-item"><div class="lms-item-icon">${esc(m.short)}</div><div><h3>${esc(m.title)}</h3><p>${m.modules?pct+'% module progress · ':'Learning path · '}Last active ${esc(formatDate(last))}</p>${progressBar(m,pct)}</div><a class="btn btn-primary" href="${esc(m.href)}">Resume</a></div>`;
+        const resumableId=sortedEnrolled.find(id=>!COURSES[id].modules||progressPercent(state,id)<100);
+        const id=resumableId||sortedEnrolled[0],m=COURSES[id],pct=progressPercent(state,id),last=state.enrolled[id].lastOpenedAt||state.enrolled[id].enrolledAt,status=dashboardCourseStatus(m,pct);
+        resume.innerHTML=`<h2>${esc(status.heading)}</h2><div class="lms-item"><div class="lms-item-icon">${esc(m.short)}</div><div><h3>${esc(m.title)}</h3><p>${esc(status.summary)} · Last active ${esc(formatDate(last))}</p>${progressBar(m,pct)}</div><a class="btn btn-primary" href="${esc(status.resumeHref)}">${esc(status.resumeLabel)}</a></div>`;
       }else resume.innerHTML='<h2>Continue learning</h2><div class="lms-empty">Enrol in a learning path and your most recently opened course will appear here for one-click access.</div>';
     }
     if(learning){
       learning.innerHTML=sortedEnrolled.length?sortedEnrolled.map(id=>{
-        const m=COURSES[id],pct=progressPercent(state,id);return `<div class="lms-item"><div class="lms-item-icon">${esc(m.short)}</div><div><h3>${esc(m.title)}</h3><p>${m.modules?pct+'% module progress':'Learning path enrolled · Module tracking not yet available'} · ${esc(m.level)}</p>${progressBar(m,pct)}</div><a class="btn btn-secondary" href="${esc(m.href)}">Continue</a></div>`
+        const m=COURSES[id],pct=progressPercent(state,id),status=dashboardCourseStatus(m,pct);return `<div class="lms-item"><div class="lms-item-icon">${esc(m.short)}</div><div><h3>${esc(m.title)}</h3><p>${m.modules?esc(status.summary):'Learning path enrolled · Module tracking not yet available'} · ${esc(m.level)}</p>${progressBar(m,pct)}</div><a class="btn btn-secondary" href="${esc(m.href)}">${esc(status.listLabel)}</a></div>`
       }).join(''):`<div class="lms-empty">You have not enrolled in a learning path on this browser yet. <a href="/courses.html" style="color:var(--cyan)">Explore free courses →</a></div>`;
     }
     const saved=document.querySelector('[data-lms-saved-list]');
@@ -190,5 +202,5 @@
     const courseId=document.body.dataset.lmsCourse;if(courseId)touchCourse(courseId);
   });
 
-  window.SEALMS={getState,enroll,toggleSaved,progressPercent};
+  window.SEALMS={getState,enroll,toggleSaved,progressPercent,dashboardCourseStatus};
 })();
