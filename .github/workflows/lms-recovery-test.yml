@@ -26,6 +26,9 @@ on:
       - 'tests/lms-course-notes.test.mjs'
       - 'tests/lms-quiz.test.mjs'
       - 'tests/lms-course-progression.test.mjs'
+      - 'tests/reduced-motion.test.mjs'
+      - 'styles.css'
+      - 'pages.css'
       - '.github/workflows/lms-recovery-test.yml'
   pull_request:
     branches: [main]
@@ -52,6 +55,9 @@ on:
       - 'tests/lms-course-notes.test.mjs'
       - 'tests/lms-quiz.test.mjs'
       - 'tests/lms-course-progression.test.mjs'
+      - 'tests/reduced-motion.test.mjs'
+      - 'styles.css'
+      - 'pages.css'
       - '.github/workflows/lms-recovery-test.yml'
   workflow_dispatch:
 
