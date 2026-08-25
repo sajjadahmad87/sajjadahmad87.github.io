@@ -88,3 +88,19 @@ for (const quiz of quizzes) {
     }
   });
 }
+
+test('PPM missed answers link to accessible, focused guide sections', async () => {
+  const source = await readFile(new URL('../lms-quiz-ppm.js', import.meta.url), 'utf8');
+  const guide = await readFile(new URL('../guides/ppm-checklist/index.html', import.meta.url), 'utf8');
+  const { QUESTIONS } = await loadQuiz('lms-quiz-ppm.js');
+
+  assert.equal(QUESTIONS.length, 5);
+  for (const question of QUESTIONS) {
+    assert.match(question.r, /^\/guides\/ppm-checklist\/#[-a-z]+$/);
+    const fragment = question.r.split('#')[1];
+    assert.ok(guide.includes('id="' + fragment + '"'), 'Missing guide target: ' + fragment);
+  }
+  assert.match(source, /aria-describedby="ppm-feedback-\$\{i\}"/);
+  assert.match(source, /link\.textContent='Review this topic'/);
+  assert.match(source, /box\.textContent='Select an answer before submitting\.'/);
+});
