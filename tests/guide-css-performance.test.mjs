@@ -32,6 +32,31 @@ test('guide pages load only the self-contained guide stylesheet', () => {
   }
 });
 
+test('guide pages expose complete large social preview metadata', () => {
+  const imageUrl = 'https://sajjadengineeringacademy.com/social-preview.png';
+  for (const path of pages) {
+    const html = readFileSync(new URL(path, root), 'utf8');
+    assert.match(html, /<meta property="og:site_name" content="Sajjad's Engineering Academy">/, path);
+    assert.match(html, new RegExp(`<meta property="og:image" content="${imageUrl}">`), path);
+    assert.match(html, /<meta property="og:image:type" content="image\/png">/, path);
+    assert.match(html, /<meta property="og:image:width" content="1200">/, path);
+    assert.match(html, /<meta property="og:image:height" content="630">/, path);
+    assert.match(html, /<meta property="og:image:alt" content="[^"]+">/, path);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, path);
+    assert.match(html, /<meta name="twitter:title" content="[^"]+">/, path);
+    assert.match(html, /<meta name="twitter:description" content="[^"]+">/, path);
+    assert.match(html, new RegExp(`<meta name="twitter:image" content="${imageUrl}">`), path);
+    assert.match(html, /<meta name="twitter:image:alt" content="[^"]+">/, path);
+    assert.equal((html.match(/property="og:image"/g) || []).length, 1, path);
+    assert.equal((html.match(/name="twitter:image"/g) || []).length, 1, path);
+  }
+
+  const image = readFileSync(new URL('social-preview.png', root));
+  assert.equal(image.subarray(1, 4).toString(), 'PNG');
+  assert.equal(image.readUInt32BE(16), 1200);
+  assert.equal(image.readUInt32BE(20), 630);
+});
+
 test('guide stylesheet includes the required shared foundation', () => {
   const css = readFileSync(new URL('guide.css', root), 'utf8');
   assert.match(css, /\.guide-body,\.guide-body \*\{box-sizing:border-box\}/);
