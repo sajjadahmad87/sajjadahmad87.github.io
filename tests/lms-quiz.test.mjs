@@ -149,3 +149,49 @@ test('PPM storage errors use focused assertive feedback before success rendering
   assert.match(source, /no success was recorded/);
   assert.match(source, /if\(!saveAttempt\(score\)\)/);
 });
+
+const transactionalQuizzes = [
+  { file: 'lms-quiz.js', quizKey: 'sea_lms_quiz_v1', label: 'HVAC knowledge check' },
+  { file: 'lms-quiz-rca.js', quizKey: 'sea_lms_quiz_rca_v1', label: 'RCA knowledge check' },
+  { file: 'lms-quiz-electrical.js', quizKey: 'sea_lms_quiz_electrical_v1', label: 'Electrical troubleshooting knowledge check' }
+];
+
+for (const quiz of transactionalQuizzes) {
+  test(quiz.label + ' rolls back both records after a partial storage failure', async () => {
+    const lmsKey = 'sea_lms_state_v1';
+    const initialQuiz = JSON.stringify({ attempts: [{ score: 2, total: 5, at: 'before' }] });
+    const initialLms = JSON.stringify({ activity: [{ label: 'before' }], enrolled: {}, saved: [], progress: {} });
+    const values = new Map([[quiz.quizKey, initialQuiz], [lmsKey, initialLms]]);
+    let failKey = lmsKey;
+    const storage = {
+      getItem(key) { return values.has(key) ? values.get(key) : null; },
+      setItem(key, value) {
+        values.set(key, String(value));
+        if (key === failKey) { failKey = null; throw new Error('simulated quota failure'); }
+      },
+      removeItem(key) { values.delete(key); }
+    };
+    const { saveAttempt } = await loadQuiz(quiz.file, storage);
+
+    assert.equal(saveAttempt(4), false);
+    assert.equal(values.get(quiz.quizKey), initialQuiz);
+    assert.equal(values.get(lmsKey), initialLms);
+
+    assert.equal(saveAttempt(4), true);
+    const storedQuiz = JSON.parse(values.get(quiz.quizKey));
+    const storedLms = JSON.parse(values.get(lmsKey));
+    assert.equal(storedQuiz.attempts[0].score, 4);
+    assert.equal(storedQuiz.attempts.length, 2);
+    assert.equal(storedLms.activity[0].label, quiz.label + ': 4/5');
+    assert.equal(storedLms.activity.length, 2);
+    assert.equal(storedQuiz.attempts[0].at, storedLms.activity[0].at);
+  });
+
+  test(quiz.label + ' exposes focused assertive storage-error feedback', async () => {
+    const source = await readFile(new URL('../' + quiz.file, import.meta.url), 'utf8');
+    assert.match(source, /result\.setAttribute\('role','alert'\)/);
+    assert.match(source, /result\.setAttribute\('aria-live','assertive'\)/);
+    assert.match(source, /if\(!saveAttempt\(score\)\)/);
+    assert.match(source, /no success was recorded/);
+  });
+}

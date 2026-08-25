@@ -14,11 +14,29 @@
   const scoreAnswers=answers=>QUESTIONS.reduce((score,x,i)=>score+(answers[i]!==null&&answers[i]!==undefined&&Number(answers[i])===x.c?1:0),0);
   const resultMarkup=score=>{const pct=Math.round(score/QUESTIONS.length*100);return `<p><strong>Score: ${score}/${QUESTIONS.length} (${pct}%).</strong> ${pct>=80?'Strong result. Review any missed explanations before continuing.':'Review the explanations, use the resources below, and try again when ready.'}</p><nav class="lms-quiz-actions" aria-label="Recommended HVAC review resources"><span>Next study:</span><a class="btn btn-secondary" href="/guides/ahu-troubleshooting/">AHU troubleshooting guide</a><a class="btn btn-secondary" href="/guides/vfd-fundamentals/">VFD fundamentals guide</a></nav>`};
   const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
-  const write=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+  const restore=(key,before)=>{try{if(before===null)localStorage.removeItem(key);else localStorage.setItem(key,before);return localStorage.getItem(key)===before}catch{return false}};
+  const saveAttempt=score=>{
+    let beforeQuiz,beforeLms;try{beforeQuiz=localStorage.getItem(QUIZ_KEY);beforeLms=localStorage.getItem(LMS_KEY)}catch{return false}
+    let quiz,lms;try{quiz=beforeQuiz?JSON.parse(beforeQuiz):{};lms=beforeLms?JSON.parse(beforeLms):{}}catch{return false}
+    if(!quiz||typeof quiz!=='object'||Array.isArray(quiz)||!lms||typeof lms!=='object'||Array.isArray(lms))return false;
+    quiz.attempts=Array.isArray(quiz.attempts)?quiz.attempts:[];
+    lms.enrolled=lms.enrolled&&typeof lms.enrolled==='object'&&!Array.isArray(lms.enrolled)?lms.enrolled:{};
+    lms.saved=Array.isArray(lms.saved)?lms.saved:[];
+    lms.progress=lms.progress&&typeof lms.progress==='object'&&!Array.isArray(lms.progress)?lms.progress:{};
+    lms.activity=Array.isArray(lms.activity)?lms.activity:[];
+    const at=new Date().toISOString();
+    quiz.attempts.unshift({courseId:COURSE_ID,score,total:QUESTIONS.length,at});quiz.attempts=quiz.attempts.slice(0,20);
+    lms.activity.unshift({type:'quiz-attempt',courseId:COURSE_ID,label:`HVAC knowledge check: ${score}/${QUESTIONS.length}`,at});lms.activity=lms.activity.slice(0,40);lms.updatedAt=at;
+    const quizRaw=JSON.stringify(quiz),lmsRaw=JSON.stringify(lms);
+    try{
+      localStorage.setItem(QUIZ_KEY,quizRaw);if(localStorage.getItem(QUIZ_KEY)!==quizRaw)throw new Error('Unverified quiz write');
+      localStorage.setItem(LMS_KEY,lmsRaw);if(localStorage.getItem(LMS_KEY)!==lmsRaw)throw new Error('Unverified activity write');
+      return true;
+    }catch{restore(QUIZ_KEY,beforeQuiz);restore(LMS_KEY,beforeLms);return false}
+  };
   const signedIn=()=>{const a=read(ACCOUNT_KEY),s=read(SESSION_KEY);return !!(a&&s&&a.email&&a.email===s.email)};
   const login=()=>{location.href='/signin.html?return='+encodeURIComponent(location.pathname+location.search+location.hash)};
   const quizState=()=>{const x=read(QUIZ_KEY)||{attempts:[]};x.attempts=Array.isArray(x.attempts)?x.attempts:[];return x};
-  const addActivity=(score)=>{const s=read(LMS_KEY)||{enrolled:{},saved:[],progress:{},activity:[]};s.activity=Array.isArray(s.activity)?s.activity:[];s.activity.unshift({type:'quiz-attempt',courseId:COURSE_ID,label:`HVAC knowledge check: ${score}/${QUESTIONS.length}`,at:new Date().toISOString()});s.activity=s.activity.slice(0,40);s.updatedAt=new Date().toISOString();write(LMS_KEY,s)};
   const bestScore=()=>{const a=quizState().attempts;return a.length?Math.max(...a.map(x=>Number(x.score)||0)):null};
   const renderSummary=()=>{
     document.querySelectorAll('[data-lms-quiz-best]').forEach(el=>{const b=bestScore();el.textContent=b===null?'Not attempted':`${b}/${QUESTIONS.length}`});
@@ -38,7 +56,7 @@
       });
       const score=scoreAnswers(answers);const result=form.querySelector('[data-lms-quiz-result]');
       if(answered<QUESTIONS.length){result.hidden=false;result.textContent=`You answered ${answered} of ${QUESTIONS.length} questions. Complete all questions to save an attempt.`;const firstUnanswered=QUESTIONS.findIndex((_,i)=>fd.get('q'+i)===null);const firstInput=firstUnanswered>=0?form.querySelector(`input[name="q${firstUnanswered}"]`):null;if(firstInput)firstInput.focus();return}
-      const state=quizState();state.attempts.unshift({courseId:COURSE_ID,score,total:QUESTIONS.length,at:new Date().toISOString()});state.attempts=state.attempts.slice(0,20);write(QUIZ_KEY,state);addActivity(score);renderSummary();
+      if(!saveAttempt(score)){result.hidden=false;result.setAttribute('role','alert');result.setAttribute('aria-live','assertive');result.textContent='Your attempt could not be verified in browser storage, so no success was recorded. Check browser storage permissions, reload, and try again.';result.focus();return}renderSummary();result.setAttribute('role','status');result.setAttribute('aria-live','polite');
       result.hidden=false;result.innerHTML=resultMarkup(score);result.focus();
     });
     form.addEventListener('reset',()=>setTimeout(()=>{form.querySelectorAll('.lms-quiz-feedback').forEach(x=>{x.hidden=true;x.textContent=''});const r=form.querySelector('[data-lms-quiz-result]');r.hidden=true;r.textContent=''},0));
