@@ -19,7 +19,7 @@
 
 <link rel="stylesheet" href="../../guide.css">
 <style>
-.calc{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}.panel{border:1px solid rgba(145,225,255,.16);border-radius:16px;background:#0b1a27;padding:22px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:7px}.field label{font-size:12px;color:#b9cbd6;font-weight:700}.field input{width:100%;padding:12px 13px;border:1px solid rgba(145,225,255,.18);border-radius:9px;background:#071521;color:#fff;font:inherit}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:9px;padding:12px 16px;font-weight:800;cursor:pointer;background:#63ecff;color:#04131d}.reset{background:#112638;color:#dbe9f1;border:1px solid rgba(145,225,255,.16)}.results{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.result{padding:15px;border:1px solid rgba(145,225,255,.12);border-radius:12px;background:#071521}.result small{display:block;color:#8da5b5;margin-bottom:6px}.result strong{font-size:24px;color:#63ecff}.formula{padding:14px;border-left:3px solid #63ecff;background:rgba(99,236,255,.05);margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;overflow:auto}.note{border-left:3px solid #ffd36a;background:rgba(255,211,106,.06);padding:16px;margin:22px 0;color:#c9d7df;line-height:1.7}.error{color:#ff9cac;margin-top:12px;min-height:20px;font-size:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;margin:14px 0}th,td{text-align:left;padding:11px;border-bottom:1px solid rgba(145,225,255,.12);font-size:13px}th{color:#dceaf2}@media(max-width:760px){.calc{grid-template-columns:1fr}.grid,.results{grid-template-columns:1fr}}
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}.panel{border:1px solid rgba(145,225,255,.16);border-radius:16px;background:#0b1a27;padding:22px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:7px}.field label{font-size:12px;color:#b9cbd6;font-weight:700}.field input{width:100%;padding:12px 13px;border:1px solid rgba(145,225,255,.18);border-radius:9px;background:#071521;color:#fff;font:inherit}.hint{color:#8da5b5;font-size:12px;line-height:1.6;margin:10px 0 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:9px;padding:12px 16px;font-weight:800;cursor:pointer;background:#63ecff;color:#04131d}.reset{background:#112638;color:#dbe9f1;border:1px solid rgba(145,225,255,.16)}.results{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.result{padding:15px;border:1px solid rgba(145,225,255,.12);border-radius:12px;background:#071521}.result small{display:block;color:#8da5b5;margin-bottom:6px}.result strong{font-size:24px;color:#63ecff}.formula{padding:14px;border-left:3px solid #63ecff;background:rgba(99,236,255,.05);margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;overflow:auto}.note{border-left:3px solid #ffd36a;background:rgba(255,211,106,.06);padding:16px;margin:22px 0;color:#c9d7df;line-height:1.7}.error{color:#ff9cac;margin-top:12px;min-height:20px;font-size:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;margin:14px 0}th,td{text-align:left;padding:11px;border-bottom:1px solid rgba(145,225,255,.12);font-size:13px}th{color:#dceaf2}@media(max-width:760px){.calc{grid-template-columns:1fr}.grid,.results{grid-template-columns:1fr}}
 </style>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Energy Cost & Simple Payback Calculator","url":"https://sajjadengineeringacademy.com/tools/energy-cost-payback-calculator/","description":"Engineering calculator for energy consumption, operating cost, savings and simple payback.","isPartOf":{"@type":"WebSite","name":"Sajjad's Engineering Academy","url":"https://sajjadengineeringacademy.com/"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://sajjadengineeringacademy.com/"},{"@type":"ListItem","position":2,"name":"Engineering Tools","item":"https://sajjadengineeringacademy.com/tools/"},{"@type":"ListItem","position":3,"name":"Energy Cost & Simple Payback Calculator","item":"https://sajjadengineeringacademy.com/tools/energy-cost-payback-calculator/"}]}</script>
@@ -31,31 +31,99 @@
 <div class="guide-content">
 <div class="calc">
 <section class="panel" aria-labelledby="inputs"><h2 id="inputs">Enter operating data</h2><div class="grid">
-<div class="field"><label for="basePower">Current input power (kW)</label><input id="basePower" type="number" min="0" step="any" value="30" inputmode="decimal"></div>
-<div class="field"><label for="newPower">Improved input power (kW)</label><input id="newPower" type="number" min="0" step="any" value="25" inputmode="decimal"></div>
-<div class="field"><label for="hoursDay">Operating hours per day</label><input id="hoursDay" type="number" min="0" max="24" step="any" value="16" inputmode="decimal"></div>
-<div class="field"><label for="daysYear">Operating days per year</label><input id="daysYear" type="number" min="0" max="366" step="1" value="300" inputmode="numeric"></div>
-<div class="field"><label for="tariff">Electricity tariff (cost/kWh)</label><input id="tariff" type="number" min="0" step="any" value="0.45" inputmode="decimal"></div>
-<div class="field"><label for="projectCost">Project cost (same currency)</label><input id="projectCost" type="number" min="0" step="any" value="12000" inputmode="decimal"></div>
-</div><div class="actions"><button class="btn" id="calculate" type="button">Calculate</button><button class="btn reset" id="reset" type="button">Reset example</button></div><div class="error" id="error" role="status" aria-live="polite"></div></section>
+<div class="field"><label for="basePower">Current input power (kW)</label><input id="basePower" type="number" min="0.01" step="any" value="30" inputmode="decimal" required aria-describedby="powerHint" aria-errormessage="error"></div>
+<div class="field"><label for="newPower">Improved input power (kW)</label><input id="newPower" type="number" min="0" step="any" value="25" inputmode="decimal" required aria-describedby="powerHint" aria-errormessage="error"></div>
+<div class="field"><label for="hoursDay">Operating hours per day</label><input id="hoursDay" type="number" min="0.01" max="24" step="any" value="16" inputmode="decimal" required aria-errormessage="error"></div>
+<div class="field"><label for="daysYear">Operating days per year</label><input id="daysYear" type="number" min="1" max="366" step="1" value="300" inputmode="numeric" required aria-errormessage="error"></div>
+<div class="field"><label for="tariff">Electricity tariff (cost/kWh)</label><input id="tariff" type="number" min="0.0001" step="any" value="0.45" inputmode="decimal" required aria-describedby="currencyHint" aria-errormessage="error"></div>
+<div class="field"><label for="projectCost">Project cost (same currency)</label><input id="projectCost" type="number" min="0" step="any" value="12000" inputmode="decimal" required aria-describedby="currencyHint" aria-errormessage="error"></div>
+</div><p class="hint" id="powerHint">Use measured average input power for comparable operating periods, not motor nameplate power alone.</p><p class="hint" id="currencyHint">Enter tariff and project cost on the same currency basis; include applicable tariff components separately where material.</p><div class="actions"><button class="btn" id="calculate" type="button">Calculate</button><button class="btn reset" id="reset" type="button">Reset example</button></div><div class="error" id="error" role="status" aria-live="polite" aria-atomic="true"></div></section>
 <section class="panel" aria-labelledby="results"><h2 id="results">Results</h2><div class="results">
 <div class="result"><small>Current annual energy</small><strong id="baseKwh">—</strong><span> kWh</span></div>
 <div class="result"><small>Improved annual energy</small><strong id="newKwh">—</strong><span> kWh</span></div>
 <div class="result"><small>Annual energy saved</small><strong id="savedKwh">—</strong><span> kWh</span></div>
 <div class="result"><small>Annual cost saved</small><strong id="savedCost">—</strong></div>
 <div class="result"><small>Current annual cost</small><strong id="baseCost">—</strong></div>
+<div class="result"><small>Improved annual cost</small><strong id="newCost">—</strong></div>
+<div class="result"><small>Energy reduction</small><strong id="reductionPct">—</strong><span>%</span></div>
 <div class="result"><small>Simple payback</small><strong id="payback">—</strong><span> years</span></div>
 </div><p style="font-size:12px;color:#8da5b5;margin-top:14px">Currency is intentionally generic: enter the tariff and project cost in the same currency basis.</p><p class="sr-only" id="resultAnnouncement" role="status" aria-live="polite" aria-atomic="true"></p></section>
 </div>
-<h2>Formulas used</h2><div class="formula">Annual energy (kWh) = input power (kW) × operating hours/day × operating days/year</div><div class="formula">Annual cost = annual energy × electricity tariff</div><div class="formula">Annual savings = (current annual energy − improved annual energy) × tariff</div><div class="formula">Simple payback (years) = project cost ÷ annual cost savings</div>
-<h2>Worked example</h2><p>A 30 kW load operates 16 hours/day for 300 days/year. An improvement reduces average input power to 25 kW. At a tariff of 0.45 per kWh and project cost of 12,000:</p><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Approximate result</th></tr></thead><tbody><tr><td>Current annual energy</td><td>144,000 kWh</td></tr><tr><td>Improved annual energy</td><td>120,000 kWh</td></tr><tr><td>Annual energy saved</td><td>24,000 kWh</td></tr><tr><td>Annual cost saved</td><td>10,800</td></tr><tr><td>Simple payback</td><td>1.11 years</td></tr></tbody></table></div>
-<h2>Use the result carefully</h2><ul><li>Use measured average input power where possible instead of motor or equipment nameplate ratings.</li><li>Use realistic operating hours and production patterns; annualized savings are only as good as the operating baseline.</li><li>For variable-load equipment, compare representative logged kW or kWh before and after the change.</li><li>Include demand charges, maintenance savings, financing, degradation, escalation and downtime separately when they materially affect a business case.</li><li>Simple payback is not the same as lifecycle cost, NPV or IRR.</li></ul>
+<h2>Formulas used</h2><div class="formula">Annual energy (kWh) = input power (kW) × operating hours/day × operating days/year</div><div class="formula">Annual cost = annual energy × electricity tariff</div><div class="formula">Annual savings = (current annual energy − improved annual energy) × tariff</div><div class="formula">Energy reduction (%) = annual energy saved ÷ current annual energy × 100</div><div class="formula">Simple payback (years) = project cost ÷ annual cost savings</div>
+<h2>Worked example</h2><p>A 30 kW load operates 16 hours/day for 300 days/year. An improvement reduces average input power to 25 kW. At a tariff of 0.45 per kWh and project cost of 12,000:</p><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Approximate result</th></tr></thead><tbody><tr><td>Current annual energy</td><td>144,000 kWh</td></tr><tr><td>Improved annual energy</td><td>120,000 kWh</td></tr><tr><td>Annual energy saved</td><td>24,000 kWh</td></tr><tr><td>Energy reduction</td><td>16.67%</td></tr><tr><td>Current annual cost</td><td>64,800</td></tr><tr><td>Improved annual cost</td><td>54,000</td></tr><tr><td>Annual cost saved</td><td>10,800</td></tr><tr><td>Simple payback</td><td>1.11 years</td></tr></tbody></table></div>
+<h2>Use the result carefully</h2><ul><li>The current and improved cases use the same operating hours and days and therefore assume equivalent production or useful service. Calculate the cases separately when schedules or output differ.</li><li>Use measured average input power where possible instead of motor or equipment nameplate ratings.</li><li>Use realistic operating hours and production patterns; annualized savings are only as good as the operating baseline.</li><li>For variable-load equipment, compare representative logged kW or kWh before and after the change.</li><li>Include demand charges, maintenance savings, financing, degradation, escalation and downtime separately when they materially affect a business case.</li><li>Simple payback is not the same as lifecycle cost, NPV or IRR.</li></ul>
 <div class="note"><strong>Engineering limitation:</strong> This is a preliminary energy-analysis tool, not a guaranteed savings model. Validate proposed savings using calibrated measurements, a representative baseline, applicable tariff structure, OEM/design data and competent engineering review before approving expenditure or changing operating settings.</div>
 <h2>Related learning</h2><div class="guide-grid"><a class="guide-card" href="../three-phase-power-calculator/"><strong>Three-Phase Power Calculator</strong><small>Estimate electrical input power from measured three-phase values.</small></a><a class="guide-card" href="../../guides/vfd-fundamentals/"><strong>VFD Fundamentals</strong><small>Understand where variable-speed control can change equipment energy use.</small></a><a class="guide-card" href="../../guides/ppm-checklist/"><strong>Professional PPM Checklist</strong><small>Build measurable inspection tasks around equipment condition and performance.</small></a></div><a class="guide-home" href="../">← Back to Engineering Tools</a>
 </div></article></main>
 <footer class="guide-footer">Sajjad's Engineering Academy — free practical engineering learning for the real workplace.</footer>
 <script>
-(()=>{const ids=['basePower','newPower','hoursDay','daysYear','tariff','projectCost'];const f=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));const out=Object.fromEntries(['baseKwh','newKwh','savedKwh','savedCost','baseCost','payback'].map(id=>[id,document.getElementById(id)]));const err=document.getElementById('error');const announcement=document.getElementById('resultAnnouncement');const fmt=n=>Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:2}):'—';function calc(announce=false){const v=Object.fromEntries(ids.map(id=>[id,Number(f[id].value)]));err.textContent='';if(v.basePower<0||v.newPower<0||v.hoursDay<0||v.hoursDay>24||v.daysYear<0||v.daysYear>366||v.tariff<0||v.projectCost<0){err.textContent='Enter non-negative power, tariff and project cost values; hours/day must be 0–24 and days/year 0–366.';Object.values(out).forEach(x=>x.textContent='—');if(announce)announcement.textContent='Calculation could not be completed. '+err.textContent;return;}const h=v.hoursDay*v.daysYear,base=v.basePower*h,newE=v.newPower*h,saved=base-newE,baseCost=base*v.tariff,savedCost=saved*v.tariff;out.baseKwh.textContent=fmt(base);out.newKwh.textContent=fmt(newE);out.savedKwh.textContent=fmt(saved);out.baseCost.textContent=fmt(baseCost);out.savedCost.textContent=fmt(savedCost);out.payback.textContent=savedCost>0?fmt(v.projectCost/savedCost):'—';if(savedCost<=0)err.textContent='The improved condition does not produce positive cost savings with the values entered, so simple payback is not calculated.';if(announce){announcement.textContent=savedCost>0?'Results updated. Current annual energy '+fmt(base)+' kilowatt-hours. Improved annual energy '+fmt(newE)+' kilowatt-hours. Annual energy saved '+fmt(saved)+' kilowatt-hours. Annual cost saved '+fmt(savedCost)+'. Simple payback '+fmt(v.projectCost/savedCost)+' years.':'Results updated. No positive cost saving or simple payback is available for the values entered.';}}document.getElementById('calculate').addEventListener('click',()=>calc(true));document.getElementById('reset').addEventListener('click',()=>{f.basePower.value=30;f.newPower.value=25;f.hoursDay.value=16;f.daysYear.value=300;f.tariff.value=.45;f.projectCost.value=12000;calc(true);});ids.forEach(id=>f[id].addEventListener('input',()=>calc(false)));calc(false);})();
+(()=>{
+  const ids=['basePower','newPower','hoursDay','daysYear','tariff','projectCost'];
+  const f=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
+  const out=Object.fromEntries(['baseKwh','newKwh','savedKwh','savedCost','baseCost','newCost','reductionPct','payback'].map(id=>[id,document.getElementById(id)]));
+  const err=document.getElementById('error');
+  const announcement=document.getElementById('resultAnnouncement');
+  const fmt=n=>Number.isFinite(n)?n.toLocaleString(undefined,{maximumFractionDigits:2}):'—';
+  const clearInvalid=()=>ids.forEach(id=>f[id].removeAttribute('aria-invalid'));
+  const fail=(message,invalidIds,announce)=>{
+    err.textContent=message;
+    Object.values(out).forEach(x=>x.textContent='—');
+    invalidIds.forEach(id=>f[id].setAttribute('aria-invalid','true'));
+    if(announce){
+      announcement.textContent='Calculation could not be completed. '+message;
+      if(invalidIds.length)f[invalidIds[0]].focus();
+    }
+  };
+  function calc(announce=false){
+    const raw=Object.fromEntries(ids.map(id=>[id,f[id].value.trim()]));
+    const missing=ids.filter(id=>raw[id]==='');
+    err.textContent='';
+    clearInvalid();
+    if(missing.length){
+      fail('Complete all six fields before calculating.',missing,announce);
+      return;
+    }
+    const v=Object.fromEntries(ids.map(id=>[id,Number(raw[id])]));
+    const invalid=ids.filter(id=>!Number.isFinite(v[id]));
+    if(!(v.basePower>0))invalid.push('basePower');
+    if(!(v.newPower>=0))invalid.push('newPower');
+    if(!(v.hoursDay>0&&v.hoursDay<=24))invalid.push('hoursDay');
+    if(!(Number.isInteger(v.daysYear)&&v.daysYear>=1&&v.daysYear<=366))invalid.push('daysYear');
+    if(!(v.tariff>0))invalid.push('tariff');
+    if(!(v.projectCost>=0))invalid.push('projectCost');
+    const invalidIds=[...new Set(invalid)];
+    if(invalidIds.length){
+      fail('Use current power above 0 kW, improved power at or above 0 kW, hours from above 0 to 24, whole operating days from 1 to 366, tariff above 0, and project cost at or above 0.',invalidIds,announce);
+      return;
+    }
+    const exposure=v.hoursDay*v.daysYear;
+    const base=v.basePower*exposure;
+    const newE=v.newPower*exposure;
+    const saved=base-newE;
+    const baseCost=base*v.tariff;
+    const newCost=newE*v.tariff;
+    const savedCost=saved*v.tariff;
+    const reduction=saved/base*100;
+    out.baseKwh.textContent=fmt(base);
+    out.newKwh.textContent=fmt(newE);
+    out.savedKwh.textContent=fmt(saved);
+    out.baseCost.textContent=fmt(baseCost);
+    out.newCost.textContent=fmt(newCost);
+    out.savedCost.textContent=fmt(savedCost);
+    out.reductionPct.textContent=fmt(reduction);
+    out.payback.textContent=savedCost>0?fmt(v.projectCost/savedCost):'—';
+    if(savedCost<=0)err.textContent='The improved condition does not produce positive cost savings with the values entered, so simple payback is not calculated.';
+    if(announce){
+      announcement.textContent=savedCost>0?'Results updated. Current annual energy '+fmt(base)+' kilowatt-hours. Improved annual energy '+fmt(newE)+' kilowatt-hours. Energy reduction '+fmt(reduction)+' percent. Current annual cost '+fmt(baseCost)+'. Improved annual cost '+fmt(newCost)+'. Annual cost saved '+fmt(savedCost)+'. Simple payback '+fmt(v.projectCost/savedCost)+' years.':'Results updated. No positive cost saving or simple payback is available for the values entered.';
+    }
+  }
+  document.getElementById('calculate').addEventListener('click',()=>calc(true));
+  document.getElementById('reset').addEventListener('click',()=>{
+    f.basePower.value=30;f.newPower.value=25;f.hoursDay.value=16;f.daysYear.value=300;f.tariff.value=.45;f.projectCost.value=12000;calc(true);
+  });
+  ids.forEach(id=>f[id].addEventListener('input',()=>calc(false)));
+  calc(false);
+})();
 </script>
 </body>
 </html>
