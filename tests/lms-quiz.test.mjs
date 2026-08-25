@@ -30,14 +30,20 @@ const loadQuiz = async (file, storage = {}) => {
   const source = await readFile(new URL('../' + file, import.meta.url), 'utf8');
   const instrumented = source.replace(
     /\n\}\)\(\);\s*$/,
-    '\n;globalThis.__SEA_QUIZ_TEST__={QUESTIONS,scoreAnswers,resultMarkup,signedIn};\n})();\n'
+    '\n;globalThis.__SEA_QUIZ_TEST__={QUESTIONS,scoreAnswers,resultMarkup,signedIn,...(typeof saveAttempt===\"function\"?{saveAttempt}: {})};\n})();\n'
   );
+  const storageApi = typeof storage.getItem === 'function' ? storage : {
+    getItem(key) { return Object.hasOwn(storage, key) ? storage[key] : null; },
+    setItem(key, value) { storage[key] = String(value); },
+    removeItem(key) { delete storage[key]; }
+  };
   const context = {
     console,
     Number,
     Math,
+    Date,
     document: { addEventListener() {} },
-    localStorage: { getItem(key) { return Object.hasOwn(storage, key) ? storage[key] : null; } },
+    localStorage: storageApi,
     location: { pathname: '/quiz.html', search: '', hash: '', href: '' },
     encodeURIComponent
   };
@@ -103,4 +109,43 @@ test('PPM missed answers link to accessible, focused guide sections', async () =
   assert.match(source, /aria-describedby="ppm-feedback-\$\{i\}"/);
   assert.match(source, /link\.textContent='Review this topic'/);
   assert.match(source, /box\.textContent='Select an answer before submitting\.'/);
+});
+
+test('PPM attempt transaction verifies both records and rolls back partial writes', async () => {
+  const quizKey = 'sea_lms_quiz_ppm_v1';
+  const lmsKey = 'sea_lms_state_v1';
+  const initialQuiz = JSON.stringify({ attempts: [{ score: 3, total: 5, at: 'before' }] });
+  const initialLms = JSON.stringify({ activity: [{ label: 'before' }], enrolled: {}, saved: [], progress: {} });
+  const values = new Map([[quizKey, initialQuiz], [lmsKey, initialLms]]);
+  let failKey = lmsKey;
+  const storage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) {
+      values.set(key, String(value));
+      if (key === failKey) { failKey = null; throw new Error('simulated quota failure'); }
+    },
+    removeItem(key) { values.delete(key); }
+  };
+  const { saveAttempt } = await loadQuiz('lms-quiz-ppm.js', storage);
+
+  assert.equal(saveAttempt(4), false);
+  assert.equal(values.get(quizKey), initialQuiz);
+  assert.equal(values.get(lmsKey), initialLms);
+
+  assert.equal(saveAttempt(4), true);
+  const quiz = JSON.parse(values.get(quizKey));
+  const lms = JSON.parse(values.get(lmsKey));
+  assert.equal(quiz.attempts[0].score, 4);
+  assert.equal(quiz.attempts.length, 2);
+  assert.equal(lms.activity[0].label, 'PPM knowledge check: 4/5');
+  assert.equal(lms.activity.length, 2);
+  assert.equal(quiz.attempts[0].at, lms.activity[0].at);
+});
+
+test('PPM storage errors use focused assertive feedback before success rendering', async () => {
+  const source = await readFile(new URL('../lms-quiz-ppm.js', import.meta.url), 'utf8');
+  assert.match(source, /result\.setAttribute\('role','alert'\)/);
+  assert.match(source, /result\.setAttribute\('aria-live','assertive'\)/);
+  assert.match(source, /no success was recorded/);
+  assert.match(source, /if\(!saveAttempt\(score\)\)/);
 });
