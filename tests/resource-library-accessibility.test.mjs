@@ -18,7 +18,8 @@ test('protected resource libraries provide keyboard bypass and labelled landmark
     assert.match(html, /<a class="skip-link" href="#main-content">Skip to main content<\/a>/);
     assert.equal((html.match(/id="main-content"/g) || []).length, 1, `${path} needs one main target`);
     assert.match(html, /<main id="main-content" tabindex="-1">/);
-    assert.match(html, /<nav class="nav-links" aria-label="Primary navigation">/);
+    assert.match(html, /<button class="menu" aria-label="Open navigation" aria-controls="primary-navigation" aria-expanded="false">/);
+    assert.match(html, /<nav class="nav-links" id="primary-navigation" aria-label="Primary navigation">/);
     assert.match(html, /href="\.\.\/resources\.html" aria-current="page">Resources<\/a>/);
   }
 });
@@ -30,4 +31,16 @@ test('shared page styles expose visible focus and high-contrast fallbacks', () =
   assert.match(css, /\.skip-link:focus\{transform:translateY\(0\)\}/);
   assert.match(css, /@media\(forced-colors:active\)/);
   assert.match(css, /outline-color:Highlight/);
+});
+
+test('mobile navigation closes predictably without leaving stale state', () => {
+  const script = read('pages.js');
+
+  assert.match(script, /aria-expanded','false'/);
+  assert.match(script, /e\.key==='Escape'.*closeMenu\(true\)/);
+  assert.match(script, /pointerdown/);
+  assert.match(script, /!links\.contains\(e\.target\)&&!menu\.contains\(e\.target\)/);
+  assert.match(script, /matchMedia\('\(min-width: 821px\)'\)/);
+  assert.match(script, /desktopView\.addEventListener\('change',closeOnDesktop\)/);
+  assert.match(script, /desktopView\.addListener\(closeOnDesktop\)/);
 });

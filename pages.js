@@ -40,9 +40,18 @@ if(menu&&links){
     menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');
   });
   links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>closeMenu()));
+  document.addEventListener('pointerdown',e=>{
+    if(links.classList.contains('open')&&!links.contains(e.target)&&!menu.contains(e.target))closeMenu();
+  });
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&links.classList.contains('open'))closeMenu(true);
   });
+  const desktopView=window.matchMedia('(min-width: 821px)');
+  const closeOnDesktop=e=>{
+    if(e.matches&&links.classList.contains('open'))closeMenu();
+  };
+  if(desktopView.addEventListener)desktopView.addEventListener('change',closeOnDesktop);
+  else desktopView.addListener(closeOnDesktop);
 }
 
 document.querySelectorAll('[data-year]').forEach(x=>x.textContent=new Date().getFullYear());
