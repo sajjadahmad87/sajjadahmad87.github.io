@@ -40,10 +40,21 @@ test('guide stylesheet includes the required shared foundation', () => {
   assert.match(css, /\.guide-body button,\.guide-body input,\.guide-body select\{font:inherit\}/);
 });
 
-
 test('guide back links do not target the removed homepage curriculum fragment', () => {
   for (const path of pages) {
     const html = readFileSync(new URL(path, root), 'utf8');
     assert.doesNotMatch(html, /href="(?:\.\.\/)+#curriculum"/, path);
   }
+});
+
+test('preventive maintenance guide preserves risk-based progression and safeguards', () => {
+  const html = readFileSync(new URL('guides/preventive-maintenance/index.html', root), 'utf8');
+  for (const id of ['strategy-workflow', 'task-selection', 'condition-monitoring', 'frequency-review', 'learning-path']) {
+    assert.match(html, new RegExp(`id="${id}"`), id);
+  }
+  assert.match(html, /Beginner → Intermediate → Advanced progression/);
+  assert.match(html, /permit-to-work and lockout\/tagout requirements/);
+  assert.match(html, /href="\.\.\/ppm-checklist\/"/);
+  assert.match(html, /href="\.\.\/fmea-maintenance\/"/);
+  assert.doesNotMatch(html, /chiller/i);
 });
