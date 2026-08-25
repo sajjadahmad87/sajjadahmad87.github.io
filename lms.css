@@ -27,3 +27,4 @@
 .lms-note-row-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .lms-note-row-actions .btn{min-height:44px;padding:10px 13px}
 @media(max-width:760px){.lms-note-row-actions{grid-column:1/-1;justify-content:stretch}.lms-note-row-actions .btn{flex:1}}
+.lms-inline-link{color:var(--cyan);text-decoration:underline;text-underline-offset:2px}

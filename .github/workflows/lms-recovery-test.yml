@@ -34,6 +34,10 @@ on:
       - 'tools/**/*.html'
       - 'resources/**/*.html'
       - 'tests/guide-css-performance.test.mjs'
+      - 'tests/ppm-resource-discovery.test.mjs'
+      - 'resources.html'
+      - 'student-dashboard.html'
+      - 'lms.css'
       - '.github/workflows/lms-recovery-test.yml'
   pull_request:
     branches: [main]
@@ -68,6 +72,10 @@ on:
       - 'tools/**/*.html'
       - 'resources/**/*.html'
       - 'tests/guide-css-performance.test.mjs'
+      - 'tests/ppm-resource-discovery.test.mjs'
+      - 'resources.html'
+      - 'student-dashboard.html'
+      - 'lms.css'
       - '.github/workflows/lms-recovery-test.yml'
   workflow_dispatch:
 
