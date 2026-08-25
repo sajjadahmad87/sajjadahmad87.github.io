@@ -29,6 +29,11 @@ on:
       - 'tests/reduced-motion.test.mjs'
       - 'styles.css'
       - 'pages.css'
+      - 'guide.css'
+      - 'guides/**/*.html'
+      - 'tools/**/*.html'
+      - 'resources/**/*.html'
+      - 'tests/guide-css-performance.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   pull_request:
     branches: [main]
@@ -58,6 +63,11 @@ on:
       - 'tests/reduced-motion.test.mjs'
       - 'styles.css'
       - 'pages.css'
+      - 'guide.css'
+      - 'guides/**/*.html'
+      - 'tools/**/*.html'
+      - 'resources/**/*.html'
+      - 'tests/guide-css-performance.test.mjs'
       - '.github/workflows/lms-recovery-test.yml'
   workflow_dispatch:
 
