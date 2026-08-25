@@ -40,3 +40,10 @@ test('guide stylesheet includes the required shared foundation', () => {
   assert.match(css, /\.guide-body button,\.guide-body input,\.guide-body select\{font:inherit\}/);
 });
 
+
+test('guide back links do not target the removed homepage curriculum fragment', () => {
+  for (const path of pages) {
+    const html = readFileSync(new URL(path, root), 'utf8');
+    assert.doesNotMatch(html, /href="(?:\.\.\/)+#curriculum"/, path);
+  }
+});
