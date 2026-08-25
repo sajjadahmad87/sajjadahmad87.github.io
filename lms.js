@@ -8,7 +8,7 @@
     'root-cause-analysis':{title:'Root Cause Analysis for Maintenance Engineers',short:'RCA',level:'Intermediate',href:'/guides/root-cause-analysis-5-why/',modules:0},
     'plc-automation-fundamentals':{title:'PLC & Automation Fundamentals for Maintenance',short:'PLC',level:'Beginner',href:'/guides/vfd-fundamentals/',modules:0},
     'electrical-troubleshooting':{title:'Electrical Troubleshooting for Industrial Maintenance',short:'ELEC',level:'Intermediate',href:'/tools/three-phase-power-calculator/',modules:0},
-    'preventive-maintenance-ppm':{title:'Preventive Maintenance Planning & PPM Excellence',short:'PPM',level:'Beginner',href:'/guides/ppm-checklist/',modules:0},
+    'preventive-maintenance-ppm':{title:'Preventive Maintenance Planning & PPM Excellence',short:'PPM',level:'Beginner',href:'/guides/preventive-maintenance/',modules:0},
     'utilities-optimization':{title:'Industrial Energy & Utilities Optimization',short:'ENERGY',level:'Advanced',href:'/tools/energy-cost-payback-calculator/',modules:0},
     'solar-pv-battery':{title:'Solar PV Fundamentals & Battery Systems',short:'SOLAR',level:'Beginner',href:'/tools/energy-cost-payback-calculator/',modules:0},
     'boiler-steam-efficiency':{title:'Boiler & Steam System Efficiency',short:'STEAM',level:'Intermediate',href:'/guides/steam-trap/',modules:0},

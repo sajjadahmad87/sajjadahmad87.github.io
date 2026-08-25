@@ -4,7 +4,7 @@
   const QUIZZES=[
     {key:'sea_lms_quiz_v1',id:'industrial-hvac-troubleshooting',name:'HVAC Troubleshooting',href:'/course.html#knowledge-check',resourceHref:'/guides/ahu-troubleshooting/',resourceLabel:'Review AHU Troubleshooting guide',toolHref:'/guides/vfd-fundamentals/',toolLabel:'Review VFD Fundamentals'},
     {key:'sea_lms_quiz_rca_v1',id:'root-cause-analysis',name:'RCA & 5-Why',href:'/quiz-rca.html',resourceHref:'/guides/root-cause-analysis-5-why/',resourceLabel:'Review RCA & 5-Why guide',toolHref:'/guides/fmea-maintenance/',toolLabel:'Continue with FMEA'},
-    {key:'sea_lms_quiz_ppm_v1',id:'preventive-maintenance-ppm',name:'Preventive Maintenance & PPM',href:'/quiz-ppm.html',resourceHref:'/guides/ppm-checklist/',resourceLabel:'Review PPM Checklist guide',toolHref:'/guides/preventive-maintenance/',toolLabel:'Review Preventive Maintenance guide'},
+    {key:'sea_lms_quiz_ppm_v1',id:'preventive-maintenance-ppm',name:'Preventive Maintenance & PPM',href:'/quiz-ppm.html',resourceHref:'/guides/preventive-maintenance/',resourceLabel:'Review Preventive Maintenance strategy',toolHref:'/guides/ppm-checklist/',toolLabel:'Build a practical PPM checklist'},
     {key:'sea_lms_quiz_electrical_v1',id:'electrical-troubleshooting',name:'Electrical Troubleshooting',href:'/quiz-electrical.html',resourceHref:'/guides/vfd-fundamentals/',resourceLabel:'Review VFD Fundamentals',toolHref:'/tools/three-phase-power-calculator/',toolLabel:'Use Three-Phase Power Calculator'}
   ];
   const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};

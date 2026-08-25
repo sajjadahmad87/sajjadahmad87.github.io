@@ -4,7 +4,7 @@
   const SKILLS=[
     {key:'sea_lms_quiz_v1',name:'HVAC Troubleshooting',logTopic:'HVAC / AHU',action:'/course.html#knowledge-check',study:'/guides/ahu-troubleshooting/'},
     {key:'sea_lms_quiz_rca_v1',name:'RCA & 5-Why',logTopic:'RCA / 5-Why',action:'/quiz-rca.html',study:'/guides/root-cause-analysis-5-why/'},
-    {key:'sea_lms_quiz_ppm_v1',name:'Preventive Maintenance & PPM',logTopic:'Preventive Maintenance / PPM',action:'/quiz-ppm.html',study:'/guides/ppm-checklist/'},
+    {key:'sea_lms_quiz_ppm_v1',name:'Preventive Maintenance & PPM',logTopic:'Preventive Maintenance / PPM',action:'/quiz-ppm.html',study:'/guides/preventive-maintenance/'},
     {key:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',action:'/quiz-electrical.html',study:'/tools/three-phase-power-calculator/'}
   ];
   const ROLES={
