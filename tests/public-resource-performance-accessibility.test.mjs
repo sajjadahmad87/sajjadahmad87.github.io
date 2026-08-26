@@ -10,7 +10,7 @@ const pages=readdirSync(resourceRoot,{withFileTypes:true})
   .sort();
 
 test('public worksheet pages use one accessible Resources hierarchy',()=>{
-  assert.equal(pages.length,3,'Expected all three indexable worksheet pages to be audited');
+  assert.equal(pages.length,4,'Expected all four indexable worksheet pages to be audited');
   for(const path of pages){
     const html=readFileSync(new URL(path,root),'utf8');
     assert.match(html,/<a class="skip-link" href="#main-content">Skip to main content<\/a>/,path);
