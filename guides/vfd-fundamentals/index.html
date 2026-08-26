@@ -53,15 +53,15 @@
 
         <h2 id="trip-evidence">Preserve trip evidence before resetting</h2>
         <p>Do not begin with repeated resets or parameter changes. Record the exact alarm text or code, timestamp, running frequency, current, DC-bus or input information available on the display, operating mode, speed reference, load condition and recent machine event. Save the event-history sequence when the drive provides one. The first alarm may identify the initiating condition; later alarms can be consequences of the stop.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Observed condition</th><th>Evidence to collect</th><th>Diagnostic direction</th></tr></thead>
+        <div class="table-wrap" role="region" aria-label="VFD trip evidence by operating condition" tabindex="0">
+          <table><caption>VFD trip evidence by operating condition</caption>
+            <thead><tr><th scope="col">Observed condition</th><th scope="col">Evidence to collect</th><th scope="col">Diagnostic direction</th></tr></thead>
             <tbody>
-              <tr><td>Trip during acceleration</td><td>Acceleration time, current trend, motor data, load release and brake status</td><td>Excess starting demand, restricted load, incorrect motor data or unsuitable ramp</td></tr>
-              <tr><td>Trip during deceleration</td><td>Deceleration time, DC-bus trend, braking equipment and load inertia</td><td>Regenerative energy, short ramp or braking-system issue</td></tr>
-              <tr><td>Trip after steady running</td><td>Current, frequency, temperature, cooling condition and process load</td><td>Overload, ventilation, ambient, supply or intermittent mechanical condition</td></tr>
-              <tr><td>Drive ready but motor stopped</td><td>Run status, permissives, interlocks, local/remote state and reference value</td><td>Command or reference path rather than an assumed power-stage failure</td></tr>
-              <tr><td>Unequal or abnormal measurements</td><td>All phase readings under a known condition and instrument suitability</td><td>Supply, connection, motor, waveform or measurement-method investigation</td></tr>
+              <tr><th scope="row">Trip during acceleration</th><td>Acceleration time, current trend, motor data, load release and brake status</td><td>Excess starting demand, restricted load, incorrect motor data or unsuitable ramp</td></tr>
+              <tr><th scope="row">Trip during deceleration</th><td>Deceleration time, DC-bus trend, braking equipment and load inertia</td><td>Regenerative energy, short ramp or braking-system issue</td></tr>
+              <tr><th scope="row">Trip after steady running</th><td>Current, frequency, temperature, cooling condition and process load</td><td>Overload, ventilation, ambient, supply or intermittent mechanical condition</td></tr>
+              <tr><th scope="row">Drive ready but motor stopped</th><td>Run status, permissives, interlocks, local/remote state and reference value</td><td>Command or reference path rather than an assumed power-stage failure</td></tr>
+              <tr><th scope="row">Unequal or abnormal measurements</th><td>All phase readings under a known condition and instrument suitability</td><td>Supply, connection, motor, waveform or measurement-method investigation</td></tr>
             </tbody>
           </table>
         </div>
