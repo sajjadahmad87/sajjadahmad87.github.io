@@ -1,0 +1,18 @@
+# Local environment and credential files
+.env
+.env.*
+!.env.example
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+
+# Generated build and editor output
+backup/
+lc4-android-build/
+**/build/
+.idea/
+*.iml
+*.log

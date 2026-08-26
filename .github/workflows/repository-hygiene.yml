@@ -21,8 +21,11 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          from base64 import b64decode
+          from io import BytesIO
           import re
           import sys
+          import tarfile
 
           text_extensions = {
               '.html', '.htm', '.js', '.css', '.json', '.md', '.txt', '.xml',
@@ -39,6 +42,10 @@ jobs:
               'AWS access key': re.compile(r'\b(?:AKIA|ASIA)[0-9A-Z]{16}\b'),
               'Slack token': re.compile(r'\bxox[baprs]-[A-Za-z0-9-]{10,}\b'),
               'Stripe live secret key': re.compile(r'\bsk_live_[0-9A-Za-z]{20,}\b'),
+              'literal Android signing password': re.compile(
+                  r'(?im)^\s*(?:storePassword|keyPassword)\s*=\s*'
+                  r'(?!\$|<|\[|CHANGE_ME|YOUR_)[^\s#]{8,}\s*$'
+              ),
           }
 
           findings = []
@@ -56,10 +63,58 @@ jobs:
                       if pattern.search(line):
                           findings.append((str(path), line_number, label))
 
+          forbidden_private_files = []
+          for path in Path('.').rglob('*'):
+              if not path.is_file() or '.git' in path.parts:
+                  continue
+              name = path.name.lower()
+              if name == 'keystore.properties' or name == '.env' or name.endswith(('.jks', '.keystore', '.p12', '.pfx', '.pem')):
+                  forbidden_private_files.append(str(path))
+
+          if forbidden_private_files:
+              print('Private credential files detected in the public repository:')
+              for path in forbidden_private_files:
+                  print(f'  - {path}')
+              sys.exit(1)
+
           if findings:
               print('Potential secret material detected. Remove or rotate it before publishing:')
               for path, line_number, label in findings:
                   print(f'  - {path}:{line_number}: {label}')
               sys.exit(1)
 
-          print('Repository hygiene check passed: no high-confidence secret patterns found in public text files.')
+          archive_parts = sorted(Path('lc4-android-release').glob('source.part*'))
+          if archive_parts:
+              try:
+                  encoded = ''.join(part.read_text(encoding='ascii') for part in archive_parts)
+                  payload = b64decode(encoded, validate=True)
+                  with tarfile.open(fileobj=BytesIO(payload), mode='r:gz') as archive:
+                      forbidden = []
+                      archived_findings = []
+                      for member in archive.getmembers():
+                          name = Path(member.name).name.lower()
+                          if name == 'keystore.properties' or name.endswith(('.jks', '.keystore', '.p12', '.pfx', '.jks.b64')):
+                              forbidden.append(member.name)
+                          if member.isfile() and Path(name).suffix in text_extensions and member.size <= 2_000_000:
+                              extracted = archive.extractfile(member)
+                              if extracted is None:
+                                  continue
+                              text = extracted.read().decode('utf-8', errors='ignore')
+                              for label, pattern in patterns.items():
+                                  if pattern.search(text):
+                                      archived_findings.append((member.name, label))
+                  if forbidden:
+                      print('Private Android signing material detected in the public source archive:')
+                      for name in forbidden:
+                          print(f'  - {name}')
+                      sys.exit(1)
+                  if archived_findings:
+                      print('Potential secret material detected inside the public Android source archive:')
+                      for name, label in archived_findings:
+                          print(f'  - {name}: {label}')
+                      sys.exit(1)
+              except (ValueError, tarfile.TarError, UnicodeDecodeError) as exc:
+                  print(f'Android source archive could not be safely audited: {exc}')
+                  sys.exit(1)
+
+          print('Repository hygiene check passed: no high-confidence secrets or Android signing material found.')

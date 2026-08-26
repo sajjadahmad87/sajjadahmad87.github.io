@@ -2,16 +2,6 @@ name: Build LC4 Spare Parts Android Release
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'lc4-android-release/**'
-      - '.github/workflows/lc4-android-build.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'lc4-android-release/**'
-      - '.github/workflows/lc4-android-build.yml'
 
 permissions:
   contents: read
@@ -49,13 +39,31 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Restore public Google Play upload keystore
+      - name: Restore Google Play upload keystore from repository secrets
         working-directory: lc4-android-build
+        env:
+          LC4_UPLOAD_KEYSTORE_BASE64: ${{ secrets.LC4_UPLOAD_KEYSTORE_BASE64 }}
+          LC4_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.LC4_UPLOAD_KEYSTORE_PASSWORD }}
+          LC4_UPLOAD_KEY_ALIAS: ${{ secrets.LC4_UPLOAD_KEY_ALIAS }}
+          LC4_UPLOAD_KEY_PASSWORD: ${{ secrets.LC4_UPLOAD_KEY_PASSWORD }}
         run: |
+          set -euo pipefail
+          for name in LC4_UPLOAD_KEYSTORE_BASE64 LC4_UPLOAD_KEYSTORE_PASSWORD LC4_UPLOAD_KEY_ALIAS LC4_UPLOAD_KEY_PASSWORD; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "Required Android signing secret $name is not configured."
+              exit 1
+            fi
+          done
           mkdir -p signing
-          base64 --decode lc4-upload-key.jks.b64 > signing/lc4-upload-key.jks
+          printf '%s' "$LC4_UPLOAD_KEYSTORE_BASE64" | base64 --decode > signing/lc4-upload-key.jks
+          cat > keystore.properties <<EOF
+          storeFile=signing/lc4-upload-key.jks
+          storePassword=$LC4_UPLOAD_KEYSTORE_PASSWORD
+          keyAlias=$LC4_UPLOAD_KEY_ALIAS
+          keyPassword=$LC4_UPLOAD_KEY_PASSWORD
+          EOF
           keytool -list -v -keystore signing/lc4-upload-key.jks \
-            -storepass 'knAJTVB-jozUYYqDmfrPL%2XfNj2' -alias lc4upload | grep -E 'Alias name|SHA256'
+            -storepass "$LC4_UPLOAD_KEYSTORE_PASSWORD" -alias "$LC4_UPLOAD_KEY_ALIAS" | grep -E 'Alias name|SHA256'
 
       - name: Build signed Play AAB and test APK
         working-directory: lc4-android-build
@@ -89,3 +97,9 @@ jobs:
             lc4-android-build/app-release.apk.sha256
           if-no-files-found: error
           retention-days: 90
+
+      - name: Remove signing material from the runner
+        if: always()
+        working-directory: lc4-android-build
+        run: |
+          rm -f keystore.properties signing/lc4-upload-key.jks
