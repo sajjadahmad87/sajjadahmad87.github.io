@@ -8,8 +8,17 @@
   const MAX_FILE_BYTES=8*1024*1024;
   const MAX_KEYS=100;
   const MAX_VALUE_BYTES=2*1024*1024;
+  const MAX_NESTING_DEPTH=20;
+  const MAX_JSON_NODES=50000;
   const REMINDER_ACTIVITY_THRESHOLD=3;
   const REMINDER_AGE_DAYS=7;
+  const ALLOWED_STORAGE_KEYS=new Set([
+    LMS_KEY,'sea_lms_course_notes_v1','sea_lms_logbook_v1','sea_lms_personal_plan_v1','sea_lms_plan_history_v1',
+    'sea_lms_quiz_v1','sea_lms_quiz_rca_v1','sea_lms_quiz_ppm_v1','sea_lms_quiz_electrical_v1',
+    'sea_lms_role_target_v1','sea_lms_role_weekly_history_v1','sea_lms_role_weekly_plan_v1',
+    'sea_lms_strategy_experiments_v1','sea_lms_strategy_history_filter_v1','sea_lms_weekly_goal_v1'
+  ]);
+  const FORBIDDEN_OBJECT_KEYS=new Set(['__proto__','prototype','constructor']);
 
   const read=(key)=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
   const announce=(message,{error=false}={})=>{
@@ -49,7 +58,7 @@
     const storage={};
     for(let i=0;i<localStorage.length;i++){
       const key=localStorage.key(i);
-      if(!safeKey(key)||key===BACKUP_META_KEY)continue;
+      if(!safeKey(key)||key===BACKUP_META_KEY||!ALLOWED_STORAGE_KEYS.has(key))continue;
       const raw=localStorage.getItem(key);
       if(raw==null)continue;
       try{storage[key]=JSON.parse(raw)}catch{/* Skip corrupt local values. */}
@@ -154,6 +163,32 @@
     }
   };
 
+  const validateJsonTree=(value,depth=0,counter={nodes:0})=>{
+    counter.nodes++;
+    if(counter.nodes>MAX_JSON_NODES||depth>MAX_NESTING_DEPTH)throw new Error('Storage value is too complex');
+    if(value===null||typeof value==='string'||typeof value==='boolean')return;
+    if(typeof value==='number'){
+      if(!Number.isFinite(value))throw new Error('Storage value contains a non-finite number');
+      return;
+    }
+    if(Array.isArray(value)){value.forEach(item=>validateJsonTree(item,depth+1,counter));return}
+    if(typeof value!=='object')throw new Error('Storage value contains an unsupported type');
+    Object.keys(value).forEach(key=>{
+      if(FORBIDDEN_OBJECT_KEYS.has(key))throw new Error('Storage value contains an unsafe object key');
+      validateJsonTree(value[key],depth+1,counter);
+    });
+  };
+  const validateStrategyData=(value)=>{
+    if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('Invalid strategy data');
+    const records=[value.active,...(Array.isArray(value.history)?value.history:[])].filter(Boolean);
+    records.forEach(record=>{
+      if(typeof record!=='object'||Array.isArray(record))throw new Error('Invalid strategy record');
+      ['baselineScore','afterScore','delta','baselineAttempts','studyTasksCompleted','studyTasksTotal'].forEach(field=>{
+        if(record[field]!=null&&!Number.isFinite(record[field]))throw new Error('Invalid strategy score');
+      });
+    });
+  };
+
   const validateComplete=(payload)=>{
     if(payload?.format!==FORMAT||Number(payload?.version)!==VERSION) return null;
     if(!payload.storage||typeof payload.storage!=='object'||Array.isArray(payload.storage))throw new Error('Invalid storage map');
@@ -161,9 +196,13 @@
     if(!keys.length||keys.length>MAX_KEYS)throw new Error('Invalid storage key count');
     keys.forEach(key=>{
       if(!safeKey(key)||key===BACKUP_META_KEY)throw new Error('Unsafe storage key');
+      if(!ALLOWED_STORAGE_KEYS.has(key))throw new Error('Unsupported storage key');
       const encoded=JSON.stringify(payload.storage[key]);
+      if(encoded===undefined)throw new Error('Invalid storage value');
       if(encoded.length>MAX_VALUE_BYTES)throw new Error('Storage value too large');
-      JSON.parse(encoded);
+      const value=JSON.parse(encoded);
+      validateJsonTree(value);
+      if(key==='sea_lms_strategy_experiments_v1')validateStrategyData(value);
     });
     return keys;
   };

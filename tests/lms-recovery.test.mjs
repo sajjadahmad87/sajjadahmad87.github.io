@@ -93,6 +93,30 @@ test('validates a complete backup and rejects unsafe storage keys', async () => 
   assert.throws(() => harness.validateComplete(unsafe), /Unsafe storage key/);
 });
 
+test('rejects unsupported and prototype-polluting complete-backup data', async () => {
+  const harness = await loadRecovery();
+  assert.throws(
+    () => harness.validateComplete(completeBackup({ sea_lms_unrecognized_v1: {} })),
+    /Unsupported storage key/
+  );
+  const polluted = JSON.parse('{"sea_lms_state_v1":{"__proto__":{"polluted":true}}}');
+  assert.throws(
+    () => harness.validateComplete(completeBackup(polluted)),
+    /unsafe object key/
+  );
+});
+
+test('rejects non-numeric strategy scores before restoring a backup', async () => {
+  const harness = await loadRecovery();
+  const payload = completeBackup({
+    sea_lms_strategy_experiments_v1: {
+      active: null,
+      history: [{ baselineScore: '<img src=x onerror=alert(1)>', afterScore: 80 }]
+    }
+  });
+  assert.throws(() => harness.validateComplete(payload), /Invalid strategy score/);
+});
+
 test('restores valid LMS data and records recovery metadata', async () => {
   const harness = await loadRecovery();
   const payload = completeBackup({
