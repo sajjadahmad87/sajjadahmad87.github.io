@@ -27,7 +27,7 @@ test('every public data table has a caption, scoped headers and named scroll reg
       for(const row of bodyRows) assert.match(row,/^<th scope="row">/,`${file} body rows require a scoped row header`);
     }
   }
-  assert.equal(count,4,'Expected all four public technical tables to be audited');
+  assert.equal(count,5,'Expected all five public technical tables to be audited');
 });
 
 test('shared guide styles provide responsive table scrolling and visible captions',()=>{
