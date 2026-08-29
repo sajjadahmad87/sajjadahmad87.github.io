@@ -210,6 +210,13 @@
   document.addEventListener('sea:study-notes-updated',renderNextBestAction);
 
   const lazyModules=[
+    {id:'assessment-analytics',src:'/lms-assessment-analytics.js'},
+    {id:'skills-matrix',src:'/lms-skills-matrix.js'},
+    {id:'verified-activity',src:'/lms-verified-activity-summary.js'},
+    {id:'practical-coverage',src:'/lms-practical-coverage.js'},
+    {id:'skills-roadmap',src:'/lms-skills-roadmap.js'},
+    {id:'role-roadmap',src:'/lms-role-roadmap.js'},
+    {id:'role-weekly-plan',src:'/lms-role-weekly-plan.js'},
     {id:'weekly-trends',src:'/lms-weekly-trends.js'},
     {id:'development-attention',src:'/lms-development-attention.js'},
     {id:'logbook',src:'/lms-logbook.js?v=20260824-lazy'},
