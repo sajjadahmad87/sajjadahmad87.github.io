@@ -10,7 +10,7 @@ const pages=readdirSync(resourceRoot,{withFileTypes:true})
   .sort();
 
 test('public worksheet pages use one accessible Resources hierarchy',()=>{
-  assert.equal(pages.length,4,'Expected all four indexable worksheet pages to be audited');
+  assert.equal(pages.length,5,'Expected all five indexable worksheet pages to be audited');
   for(const path of pages){
     const html=readFileSync(new URL(path,root),'utf8');
     assert.match(html,/<a class="skip-link" href="#main-content">Skip to main content<\/a>/,path);
@@ -27,7 +27,8 @@ test('public worksheet pages use one accessible Resources hierarchy',()=>{
     assert.ok(resource,`${path} requires LearningResource data`);
     assert.equal(breadcrumb.itemListElement[1].name,'Engineering Resources',path);
     assert.equal(breadcrumb.itemListElement[1].item,'https://sajjadengineeringacademy.com/resources.html',path);
-    assert.equal(resource.dateModified,'2026-08-26',path);
+    const expectedModified=path.includes('plc-fault-evidence-worksheet')?'2026-08-29':'2026-08-26';
+    assert.equal(resource.dateModified,expectedModified,path);
   }
 });
 
