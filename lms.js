@@ -6,7 +6,7 @@
   const COURSES={
     'industrial-hvac-troubleshooting':{title:'Industrial HVAC Troubleshooting Masterclass',short:'HVAC',level:'Intermediate',href:'/course.html',modules:4},
     'root-cause-analysis':{title:'Root Cause Analysis for Maintenance Engineers',short:'RCA',level:'Intermediate',href:'/guides/root-cause-analysis-5-why/',modules:0},
-    'plc-automation-fundamentals':{title:'PLC & Automation Fundamentals for Maintenance',short:'PLC',level:'Beginner',href:'/guides/vfd-fundamentals/',modules:0},
+    'plc-automation-fundamentals':{title:'PLC & Automation Fundamentals for Maintenance',short:'PLC',level:'Beginner',href:'/guides/plc-troubleshooting/',modules:0},
     'electrical-troubleshooting':{title:'Electrical Troubleshooting for Industrial Maintenance',short:'ELEC',level:'Intermediate',href:'/quiz-electrical.html#learning-path',modules:0},
     'preventive-maintenance-ppm':{title:'Preventive Maintenance Planning & PPM Excellence',short:'PPM',level:'Beginner',href:'/guides/preventive-maintenance/',modules:0},
     'utilities-optimization':{title:'Industrial Energy & Utilities Optimization',short:'ENERGY',level:'Advanced',href:'/tools/energy-cost-payback-calculator/',modules:0},
