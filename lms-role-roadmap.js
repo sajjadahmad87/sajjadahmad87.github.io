@@ -5,7 +5,8 @@
     {key:'sea_lms_quiz_v1',name:'HVAC Troubleshooting',logTopic:'HVAC / AHU',action:'/course.html#knowledge-check',study:'/guides/ahu-troubleshooting/'},
     {key:'sea_lms_quiz_rca_v1',name:'RCA & 5-Why',logTopic:'RCA / 5-Why',action:'/quiz-rca.html',study:'/guides/root-cause-analysis-5-why/'},
     {key:'sea_lms_quiz_ppm_v1',name:'Preventive Maintenance & PPM',logTopic:'Preventive Maintenance / PPM',action:'/quiz-ppm.html',study:'/guides/preventive-maintenance/'},
-    {key:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',action:'/quiz-electrical.html',study:'/tools/three-phase-power-calculator/'}
+    {key:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',action:'/quiz-electrical.html',study:'/tools/three-phase-power-calculator/'},
+    {key:'sea_lms_quiz_plc_v1',name:'PLC Troubleshooting',logTopic:'PLC / Automation',action:'/quiz-plc.html',study:'/guides/plc-troubleshooting/'}
   ];
   const ROLES={
     technician:{label:'Maintenance Technician',target:65,focus:['Safe, methodical inspection and fault finding','Accurate observations and maintenance records','Escalation with useful measurements and evidence'],next:'/courses.html#preventive-maintenance-ppm'},

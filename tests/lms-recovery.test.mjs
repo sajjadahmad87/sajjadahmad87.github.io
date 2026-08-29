@@ -175,7 +175,8 @@ test('complete backup round-trip preserves every quiz attempt store', async () =
     sea_lms_quiz_v1: { attempts: [{ courseId: 'industrial-hvac-troubleshooting', score: 4, total: 5, at: '2026-08-23T18:00:00.000Z' }] },
     sea_lms_quiz_rca_v1: { attempts: [{ courseId: 'root-cause-analysis', score: 5, total: 5, at: '2026-08-23T18:05:00.000Z' }] },
     sea_lms_quiz_ppm_v1: { attempts: [{ courseId: 'preventive-maintenance-ppm', score: 3, total: 5, at: '2026-08-23T18:10:00.000Z' }] },
-    sea_lms_quiz_electrical_v1: { attempts: [{ courseId: 'electrical-troubleshooting', score: 4, total: 5, at: '2026-08-23T18:15:00.000Z' }] }
+    sea_lms_quiz_electrical_v1: { attempts: [{ courseId: 'electrical-troubleshooting', score: 4, total: 5, at: '2026-08-23T18:15:00.000Z' }] },
+    sea_lms_quiz_plc_v1: { attempts: [{ courseId: 'plc-automation-fundamentals', score: 5, total: 5, at: '2026-08-23T18:20:00.000Z' }] }
   };
   const initial = Object.fromEntries(Object.entries(quizRecords).map(([key, value]) => [key, JSON.stringify(value)]));
   initial.sea_account_v2 = JSON.stringify({ email: 'learner@example.com' });

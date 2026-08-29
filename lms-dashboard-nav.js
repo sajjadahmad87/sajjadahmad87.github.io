@@ -164,7 +164,8 @@
       {key:'sea_lms_quiz_v1',title:'HVAC troubleshooting knowledge check',href:'/course.html#knowledge-check'},
       {key:'sea_lms_quiz_rca_v1',title:'RCA & 5-Why knowledge check',href:'/quiz-rca.html'},
       {key:'sea_lms_quiz_ppm_v1',title:'Preventive maintenance & PPM knowledge check',href:'/quiz-ppm.html'},
-      {key:'sea_lms_quiz_electrical_v1',title:'Electrical troubleshooting knowledge check',href:'/quiz-electrical.html'}
+      {key:'sea_lms_quiz_electrical_v1',title:'Electrical troubleshooting knowledge check',href:'/quiz-electrical.html'},
+      {key:'sea_lms_quiz_plc_v1',title:'PLC troubleshooting knowledge check',href:'/quiz-plc.html'}
     ];
 
     let action=null;

@@ -23,6 +23,11 @@ const quizzes = [
     file: 'lms-quiz-electrical.js',
     label: 'electrical',
     links: ['/tools/three-phase-power-calculator/', '/guides/vfd-fundamentals/']
+  },
+  {
+    file: 'lms-quiz-plc.js',
+    label: 'PLC',
+    links: ['/guides/plc-troubleshooting/', '/free-video-courses.html#automation-path']
   }
 ];
 
@@ -153,7 +158,8 @@ test('PPM storage errors use focused assertive feedback before success rendering
 const transactionalQuizzes = [
   { file: 'lms-quiz.js', quizKey: 'sea_lms_quiz_v1', label: 'HVAC knowledge check' },
   { file: 'lms-quiz-rca.js', quizKey: 'sea_lms_quiz_rca_v1', label: 'RCA knowledge check' },
-  { file: 'lms-quiz-electrical.js', quizKey: 'sea_lms_quiz_electrical_v1', label: 'Electrical troubleshooting knowledge check' }
+  { file: 'lms-quiz-electrical.js', quizKey: 'sea_lms_quiz_electrical_v1', label: 'Electrical troubleshooting knowledge check' },
+  { file: 'lms-quiz-plc.js', quizKey: 'sea_lms_quiz_plc_v1', label: 'PLC troubleshooting knowledge check' }
 ];
 
 for (const quiz of transactionalQuizzes) {

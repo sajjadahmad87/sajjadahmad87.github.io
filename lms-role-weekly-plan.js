@@ -7,7 +7,8 @@
     {id:'hvac',quizKey:'sea_lms_quiz_v1',name:'HVAC Troubleshooting',logTopic:'HVAC / AHU',study:'/guides/ahu-troubleshooting/',quiz:'/course.html#knowledge-check'},
     {id:'rca',quizKey:'sea_lms_quiz_rca_v1',name:'RCA & 5-Why',logTopic:'RCA / 5-Why',study:'/guides/root-cause-analysis-5-why/',quiz:'/quiz-rca.html'},
     {id:'ppm',quizKey:'sea_lms_quiz_ppm_v1',name:'Preventive Maintenance & PPM',logTopic:'Preventive Maintenance / PPM',study:'/guides/preventive-maintenance/',quiz:'/quiz-ppm.html'},
-    {id:'electrical',quizKey:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',study:'/guides/vfd-fundamentals/',quiz:'/quiz-electrical.html'}
+    {id:'electrical',quizKey:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',study:'/guides/vfd-fundamentals/',quiz:'/quiz-electrical.html'},
+    {id:'plc',quizKey:'sea_lms_quiz_plc_v1',name:'PLC Troubleshooting',logTopic:'PLC / Automation',study:'/guides/plc-troubleshooting/',quiz:'/quiz-plc.html'}
   ];
   const ROLES={technician:{label:'Maintenance Technician',target:65},engineer:{label:'Maintenance Engineer',target:75},lead:{label:'Senior / Lead Engineer',target:85}};
   const read=(k,f=null)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??f}catch{return f}};

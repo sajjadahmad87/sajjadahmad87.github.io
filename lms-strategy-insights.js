@@ -8,7 +8,8 @@
     hvac:{name:'HVAC Troubleshooting',quizKey:'sea_lms_quiz_v1'},
     rca:{name:'RCA & 5-Why',quizKey:'sea_lms_quiz_rca_v1'},
     ppm:{name:'Preventive Maintenance & PPM',quizKey:'sea_lms_quiz_ppm_v1'},
-    electrical:{name:'Electrical Troubleshooting',quizKey:'sea_lms_quiz_electrical_v1'}
+    electrical:{name:'Electrical Troubleshooting',quizKey:'sea_lms_quiz_electrical_v1'},
+    plc:{name:'PLC Troubleshooting',quizKey:'sea_lms_quiz_plc_v1'}
   };
   const read=(key,fallback=null)=>{try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}};
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));

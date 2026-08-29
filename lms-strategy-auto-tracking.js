@@ -5,7 +5,8 @@
     hvac:{primary:'/guides/ahu-troubleshooting/',secondary:'/guides/vfd-fundamentals/',quiz:'/course.html#knowledge-check'},
     rca:{primary:'/guides/root-cause-analysis-5-why/',secondary:'/guides/fmea-maintenance/',quiz:'/quiz-rca.html'},
     ppm:{primary:'/guides/ppm-checklist/',secondary:'/guides/preventive-maintenance/',quiz:'/quiz-ppm.html'},
-    electrical:{primary:'/guides/vfd-fundamentals/',secondary:'/tools/three-phase-power-calculator/',quiz:'/quiz-electrical.html'}
+    electrical:{primary:'/guides/vfd-fundamentals/',secondary:'/tools/three-phase-power-calculator/',quiz:'/quiz-electrical.html'},
+    plc:{primary:'/guides/plc-troubleshooting/',secondary:'/free-video-courses.html#automation-path',quiz:'/quiz-plc.html'}
   };
   const read=(key,fallback=null)=>{try{const value=JSON.parse(localStorage.getItem(key)||'null');return value??fallback}catch{return fallback}};
   const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));

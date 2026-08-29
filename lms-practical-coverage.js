@@ -4,7 +4,8 @@
     {name:'HVAC Troubleshooting',logTopic:'HVAC / AHU',quizKey:'sea_lms_quiz_v1',quizHref:'/course.html#knowledge-check',studyHref:'/guides/ahu-troubleshooting/'},
     {name:'RCA & 5-Why',logTopic:'RCA / 5-Why',quizKey:'sea_lms_quiz_rca_v1',quizHref:'/quiz-rca.html',studyHref:'/guides/root-cause-analysis-5-why/'},
     {name:'Preventive Maintenance / PPM',logTopic:'Preventive Maintenance / PPM',quizKey:'sea_lms_quiz_ppm_v1',quizHref:'/quiz-ppm.html',studyHref:'/guides/ppm-checklist/'},
-    {name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',quizKey:'sea_lms_quiz_electrical_v1',quizHref:'/quiz-electrical.html',studyHref:'/tools/three-phase-power-calculator/'}
+    {name:'Electrical Troubleshooting',logTopic:'Electrical Troubleshooting',quizKey:'sea_lms_quiz_electrical_v1',quizHref:'/quiz-electrical.html',studyHref:'/tools/three-phase-power-calculator/'},
+    {name:'PLC Troubleshooting',logTopic:'PLC / Automation',quizKey:'sea_lms_quiz_plc_v1',quizHref:'/quiz-plc.html',studyHref:'/guides/plc-troubleshooting/'}
   ];
   const read=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)||'null');return v??fallback}catch{return fallback}};
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));

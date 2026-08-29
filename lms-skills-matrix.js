@@ -3,7 +3,8 @@
     {key:'sea_lms_quiz_v1',name:'HVAC Troubleshooting',short:'HVAC',href:'/course.html#knowledge-check'},
     {key:'sea_lms_quiz_rca_v1',name:'RCA & 5-Why',short:'RCA',href:'/quiz-rca.html'},
     {key:'sea_lms_quiz_ppm_v1',name:'Preventive Maintenance & PPM',short:'PPM',href:'/quiz-ppm.html'},
-    {key:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',short:'ELEC',href:'/quiz-electrical.html'}
+    {key:'sea_lms_quiz_electrical_v1',name:'Electrical Troubleshooting',short:'ELEC',href:'/quiz-electrical.html'},
+    {key:'sea_lms_quiz_plc_v1',name:'PLC Troubleshooting',short:'PLC',href:'/quiz-plc.html'}
   ];
   const read=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));

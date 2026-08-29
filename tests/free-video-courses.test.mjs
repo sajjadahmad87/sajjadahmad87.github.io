@@ -29,7 +29,7 @@ test('curation supplies original learning context and academy integration',()=>{
   for(const text of ['Prerequisites:','Learning outcomes:','Recommended study use:','Free-access status:']){
     assert.equal((page.match(new RegExp(text,'g'))||[]).length,3);
   }
-  for(const path of ['tools/three-phase-power-calculator/','guides/vfd-fundamentals/','quiz-electrical.html#knowledge-check','guides/engineering-glossary/','courses.html#plc-automation-fundamentals']){
+  for(const path of ['tools/three-phase-power-calculator/','guides/vfd-fundamentals/','quiz-electrical.html#knowledge-check','guides/engineering-glossary/','guides/plc-troubleshooting/','quiz-plc.html#knowledge-check']){
     assert.ok(page.includes(`href="${path}"`));
   }
   assert.match(page,/OEM manuals, PTW\/LOTO, risk assessments/);

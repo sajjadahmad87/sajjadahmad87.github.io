@@ -5,7 +5,8 @@
     {id:'hvac',name:'HVAC Troubleshooting',quizKey:'sea_lms_quiz_v1',study:'/guides/ahu-troubleshooting/',support:'/guides/vfd-fundamentals/',quiz:'/course.html#knowledge-check'},
     {id:'rca',name:'RCA & 5-Why',quizKey:'sea_lms_quiz_rca_v1',study:'/guides/root-cause-analysis-5-why/',support:'/guides/fmea-maintenance/',quiz:'/quiz-rca.html'},
     {id:'ppm',name:'Preventive Maintenance & PPM',quizKey:'sea_lms_quiz_ppm_v1',study:'/guides/ppm-checklist/',support:'/guides/preventive-maintenance/',quiz:'/quiz-ppm.html'},
-    {id:'electrical',name:'Electrical Troubleshooting',quizKey:'sea_lms_quiz_electrical_v1',study:'/guides/vfd-fundamentals/',support:'/tools/three-phase-power-calculator/',quiz:'/quiz-electrical.html'}
+    {id:'electrical',name:'Electrical Troubleshooting',quizKey:'sea_lms_quiz_electrical_v1',study:'/guides/vfd-fundamentals/',support:'/tools/three-phase-power-calculator/',quiz:'/quiz-electrical.html'},
+    {id:'plc',name:'PLC Troubleshooting',quizKey:'sea_lms_quiz_plc_v1',study:'/guides/plc-troubleshooting/',support:'/free-video-courses.html#automation-path',quiz:'/quiz-plc.html'}
   ];
   const ROLES={technician:{label:'Maintenance Technician',target:65},engineer:{label:'Maintenance Engineer',target:75},lead:{label:'Senior / Lead Engineer',target:85}};
   const read=(k,f=null)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??f}catch{return f}};
