@@ -33,3 +33,9 @@ test('PLC catalog and learner dashboard resume the dedicated PLC pathway',()=>{
   assert.match(read('lms.js'),/'plc-automation-fundamentals':\{[^}]*href:'\/guides\/plc-troubleshooting\/'/);
   assert.doesNotMatch(read('lms.js'),/'plc-automation-fundamentals':\{[^}]*href:'\/guides\/vfd-fundamentals\/'/);
 });
+
+test('homepage reflects and features the PLC troubleshooting guide',()=>{
+  const homepage=read('index.html');
+  assert.match(homepage,/<strong>12<\/strong><span>Practical guides<\/span>/);
+  assert.match(homepage,/href="guides\/plc-troubleshooting\/"/);
+});
