@@ -81,5 +81,7 @@ test('preventive maintenance guide preserves risk-based progression and safeguar
   assert.match(html, /permit-to-work and lockout\/tagout requirements/);
   assert.match(html, /href="\.\.\/ppm-checklist\/"/);
   assert.match(html, /href="\.\.\/fmea-maintenance\/"/);
+  assert.match(html, /href="\.\.\/\.\.\/free-video-courses\.html#reliability-path"/);
+  assert.match(html, /"dateModified":"2026-08-30"/);
   assert.doesNotMatch(html, /chiller/i);
 });
