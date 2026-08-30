@@ -10,6 +10,7 @@ const modules=[
   ['skills-matrix','lms-skills-matrix.js'],
   ['verified-activity','lms-verified-activity-summary.js'],
   ['practical-coverage','lms-practical-coverage.js'],
+  ['reliability-progress','lms-reliability-path-progress.js'],
   ['skills-roadmap','lms-skills-roadmap.js'],
   ['role-roadmap','lms-role-roadmap.js'],
   ['role-weekly-plan','lms-role-weekly-plan.js']

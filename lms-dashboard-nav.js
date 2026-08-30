@@ -214,6 +214,7 @@
     {id:'skills-matrix',src:'/lms-skills-matrix.js'},
     {id:'verified-activity',src:'/lms-verified-activity-summary.js'},
     {id:'practical-coverage',src:'/lms-practical-coverage.js'},
+    {id:'reliability-progress',src:'/lms-reliability-path-progress.js'},
     {id:'skills-roadmap',src:'/lms-skills-roadmap.js'},
     {id:'role-roadmap',src:'/lms-role-roadmap.js'},
     {id:'role-weekly-plan',src:'/lms-role-weekly-plan.js'},

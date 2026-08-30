@@ -16,7 +16,8 @@
     LMS_KEY,'sea_lms_course_notes_v1','sea_lms_logbook_v1','sea_lms_personal_plan_v1','sea_lms_plan_history_v1',
     'sea_lms_quiz_v1','sea_lms_quiz_rca_v1','sea_lms_quiz_ppm_v1','sea_lms_quiz_electrical_v1','sea_lms_quiz_plc_v1',
     'sea_lms_role_target_v1','sea_lms_role_weekly_history_v1','sea_lms_role_weekly_plan_v1',
-    'sea_lms_strategy_experiments_v1','sea_lms_strategy_history_filter_v1','sea_lms_weekly_goal_v1'
+    'sea_lms_strategy_experiments_v1','sea_lms_strategy_history_filter_v1','sea_lms_weekly_goal_v1',
+    'sea_lms_reliability_path_v1'
   ]);
   const FORBIDDEN_OBJECT_KEYS=new Set(['__proto__','prototype','constructor']);
 

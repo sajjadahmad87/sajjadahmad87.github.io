@@ -86,8 +86,11 @@ function completeBackup(storage, learner = {}) {
 
 test('validates a complete backup and rejects unsafe storage keys', async () => {
   const harness = await loadRecovery();
-  const valid = completeBackup({ sea_lms_state_v1: { progress: { safety: 1 } } });
-  assert.deepEqual(Array.from(harness.validateComplete(valid)), ['sea_lms_state_v1']);
+  const valid = completeBackup({
+    sea_lms_state_v1: { progress: { safety: 1 } },
+    sea_lms_reliability_path_v1: { steps: { video: true } }
+  });
+  assert.deepEqual(Array.from(harness.validateComplete(valid)), ['sea_lms_state_v1','sea_lms_reliability_path_v1']);
 
   const unsafe = completeBackup({ sea_account_v2: { email: 'other@example.com' } });
   assert.throws(() => harness.validateComplete(unsafe), /Unsafe storage key/);
