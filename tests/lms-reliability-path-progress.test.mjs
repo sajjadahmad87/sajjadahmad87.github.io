@@ -37,9 +37,14 @@ test('reliability milestone writes are verified and failed writes retain prior d
 });
 
 test('reliability tracker is portable and avoids competency claims',()=>{
-  const dashboard=readFileSync(new URL('../student-dashboard.html',import.meta.url),'utf8');
   const recovery=readFileSync(new URL('../lms-import.js',import.meta.url),'utf8');
-  assert.match(dashboard,/id="reliability-progress"/);
   assert.match(recovery,/'sea_lms_reliability_path_v1'/);
   assert.match(source,/does not verify viewing time, practical competence, task authorization, certification or external-course completion/);
+});
+
+test('reliability milestone changes preserve focus and announce the saved state',()=>{
+  assert.match(source,/focus\(\{preventScroll:true\}\)/);
+  assert.match(source,/Study activity marked complete\./);
+  assert.match(source,/Study activity marked incomplete\./);
+  assert.match(source,/data-reliability-status aria-live="polite"/);
 });

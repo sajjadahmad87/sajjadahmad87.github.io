@@ -28,7 +28,7 @@
       return false;
     }
   };
-  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const esc=value=>String(value??'').replace(/[&<>\"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[char]));
 
   const render=()=>{
     const root=document.querySelector('[data-lms-reliability-progress]');if(!root)return;
@@ -38,14 +38,20 @@
 
   const change=event=>{
     const input=event.target.closest?.('[data-reliability-step]');if(!input)return;
-    const state=readState();state.steps[input.dataset.reliabilityStep]=input.checked;
+    const stepId=input.dataset.reliabilityStep;
+    const state=readState();state.steps[stepId]=input.checked;
     if(!persist(localStorage,state)){
       input.checked=!input.checked;
       const status=document.querySelector('[data-reliability-status]');
       if(status){status.setAttribute('role','alert');status.textContent='This milestone could not be verified in browser storage, so the previous state was retained.'}
       return;
     }
+    const message=input.checked?'Study activity marked complete.':'Study activity marked incomplete.';
     render();
+    const updated=document.querySelector(`[data-reliability-step="${stepId}"]`);
+    updated?.focus({preventScroll:true});
+    const status=document.querySelector('[data-reliability-status]');
+    if(status)status.textContent=message;
     document.dispatchEvent(new CustomEvent('sea:reliability-progress-updated'));
   };
 
