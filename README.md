@@ -15,6 +15,6 @@ Visit **Sajjad's Engineering Academy**: https://sajjadengineeringacademy.com/
 - Engineering calculators and tools: https://sajjadengineeringacademy.com/tools/
 - Learning resources: https://sajjadengineeringacademy.com/resources.html
 
-Topics include industrial maintenance, electrical engineering, PLC and automation, HVAC and chillers, reliability, preventive maintenance, RCA/FMEA, utilities, energy management, steam systems, compressors, and practical engineering troubleshooting.
+Topics include industrial maintenance, electrical engineering, PLC and automation, HVAC and air-handling systems, reliability, preventive maintenance, RCA/FMEA, utilities, energy management, steam systems, compressors, and practical engineering troubleshooting.
 
 The academy is an independent educational resource. Site procedures, OEM manuals, PTW/LOTO requirements, risk assessments, applicable regulations, and competent-person controls take priority for real engineering work.
