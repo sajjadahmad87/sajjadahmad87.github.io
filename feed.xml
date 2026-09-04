@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Sajjad's Engineering Academy — Engineering Guides</title>
-    <link>https://sajjadengineeringacademy.com/guides/</link>
-    <description>Practical engineering guides for maintenance, reliability, HVAC, electrical systems, utilities and industrial troubleshooting.</description>
+    <title>Sajjad's Engineering Academy — Engineering Guides & Research</title>
+    <link>https://sajjadengineeringacademy.com/</link>
+    <description>Practical engineering guides and research digests for maintenance, reliability, HVAC, electrical systems, automation, utilities and industrial troubleshooting.</description>
     <language>en</language>
-    <lastBuildDate>Wed, 19 Aug 2026 13:02:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 05 Sep 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://sajjadengineeringacademy.com/feed.xml" rel="self" type="application/rss+xml" />
 
+    <item>
+      <title>Latest Google Scholar Engineering Research — September 2026</title>
+      <link>https://sajjadengineeringacademy.com/blog/google-scholar-research-september-2026.html</link>
+      <guid isPermaLink="true">https://sajjadengineeringacademy.com/blog/google-scholar-research-september-2026.html</guid>
+      <pubDate>Sat, 05 Sep 2026 00:00:00 +0000</pubDate>
+      <description>Nine newly surfaced 2026 research papers translated into practical engineering takeaways covering preventive maintenance, RCM, maintenance scheduling, electrical reliability and asset management.</description>
+    </item>
     <item>
       <title>Practical Engineering Maintenance Glossary</title>
       <link>https://sajjadengineeringacademy.com/guides/engineering-glossary/</link>
