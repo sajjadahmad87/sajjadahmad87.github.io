@@ -3,3 +3,4 @@ Allow: /
 Disallow: /downloads/
 
 Sitemap: https://sajjadengineeringacademy.com/sitemap.xml
+Sitemap: https://sajjadengineeringacademy.com/blog-sitemap.xml
