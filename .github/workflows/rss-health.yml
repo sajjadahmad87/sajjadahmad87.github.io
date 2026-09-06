@@ -6,11 +6,13 @@ on:
     paths:
       - 'feed.xml'
       - 'guides/**/*.html'
+      - 'blog/**/*.html'
       - '.github/workflows/rss-health.yml'
   pull_request:
     paths:
       - 'feed.xml'
       - 'guides/**/*.html'
+      - 'blog/**/*.html'
       - '.github/workflows/rss-health.yml'
   workflow_dispatch:
 
@@ -24,7 +26,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Validate RSS structure and guide targets
+      - name: Validate RSS structure and public content targets
         shell: bash
         run: |
           python3 - <<'PY'
@@ -38,7 +40,8 @@ jobs:
           FEED = ROOT / 'feed.xml'
           SITE_HOST = 'sajjadengineeringacademy.com'
           FEED_URL = f'https://{SITE_HOST}/feed.xml'
-          GUIDES_URL = f'https://{SITE_HOST}/guides/'
+          HOME_URL = f'https://{SITE_HOST}/'
+          CONTENT_PREFIXES = ('/guides/', '/blog/')
           ATOM = '{http://www.w3.org/2005/Atom}'
           errors = []
 
@@ -88,8 +91,8 @@ jobs:
 
                       if not title:
                           errors.append('RSS channel title is empty')
-                      if link != GUIDES_URL:
-                          errors.append(f'RSS channel link must be {GUIDES_URL}, found {link!r}')
+                      if link != HOME_URL:
+                          errors.append(f'RSS channel link must be {HOME_URL}, found {link!r}')
                       if not description:
                           errors.append('RSS channel description is empty')
                       if not language:
@@ -138,8 +141,8 @@ jobs:
                           parsed = urlparse(item_link)
                           if parsed.scheme != 'https' or parsed.netloc.lower() != SITE_HOST:
                               errors.append(f'{prefix}: link is not on the canonical HTTPS academy domain: {item_link}')
-                          if not parsed.path.startswith('/guides/') or parsed.path == '/guides/':
-                              errors.append(f'{prefix}: link is not an individual guide URL: {item_link}')
+                          if not any(parsed.path.startswith(value) and parsed.path != value for value in CONTENT_PREFIXES):
+                              errors.append(f'{prefix}: link is not an individual guide or blog URL: {item_link}')
 
                           if item_link in seen_links:
                               errors.append(f'{prefix}: duplicate item link {item_link}')
@@ -165,7 +168,7 @@ jobs:
 
                           target = local_target(item_link)
                           if target is None:
-                              errors.append(f'{prefix}: link points to a missing local guide: {item_link}')
+                              errors.append(f'{prefix}: link points to missing local content: {item_link}')
 
           if errors:
               print('RSS validation failed:')
@@ -173,5 +176,5 @@ jobs:
                   print(f'  - {error}')
               sys.exit(1)
 
-          print(f'RSS validation passed: {len(seen_links)} unique engineering guide items checked.')
+          print(f'RSS validation passed: {len(seen_links)} unique engineering content items checked.')
           PY
