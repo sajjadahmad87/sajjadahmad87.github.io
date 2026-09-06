@@ -11,7 +11,9 @@ const walk=directory=>readdirSync(directory,{withFileTypes:true}).flatMap(entry=
   return entry.isDirectory()?walk(path):[path];
 });
 const htmlFiles=walk(rootPath).filter(path=>path.endsWith('.html'));
-const sitemapText=readFileSync(join(rootPath,'sitemap.xml'),'utf8');
+const sitemapText=['sitemap.xml','blog-sitemap.xml']
+  .map(file=>readFileSync(join(rootPath,file),'utf8'))
+  .join('\n');
 const sitemapUrls=[...sitemapText.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match=>match[1]);
 const sitemapSet=new Set(sitemapUrls);
 
