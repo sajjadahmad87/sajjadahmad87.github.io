@@ -50,7 +50,7 @@ test('PLC knowledge check connects every missed answer to an exact guide lesson'
 
 test('homepage reflects and features the PLC troubleshooting guide',()=>{
   const homepage=read('index.html');
-  assert.match(homepage,/<strong>12<\/strong><span>Practical guides<\/span>/);
+  assert.match(homepage,/<strong>13<\/strong><span>Practical guides<\/span>/);
   assert.match(homepage,/href="guides\/plc-troubleshooting\/"/);
   assert.match(read('resources.html'),/>12 GUIDES \+ GLOSSARY<\/span>/);
 });
